@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_number": "154801744635",
+    "firebase_url": "https://vieio-67310018.firebaseio.com",
+    "project_id": "vieio-67310018",
+    "storage_bucket": "vieio-67310018.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154801744635:android:1079c18125f1e1f8",
+        "android_client_info": {
+          "package_name": "com.vie.io"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "154801744635-ln5ukfjhpv8fk83h5f81i9pkac6goje6.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "154801744635-ln5ukfjhpv8fk83h5f81i9pkac6goje6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyuYMd1chyk_iEMKf8ovaVyP8V47xH7W0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154801744635-ln5ukfjhpv8fk83h5f81i9pkac6goje6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
