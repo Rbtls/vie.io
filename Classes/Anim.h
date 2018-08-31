@@ -33,6 +33,7 @@ class Anim
     void _frameEventHandler(cocos2d::EventCustom* event);
   public:
   	void move(int dir);
+  	void stop();
   	void attack(bool isAttacking);
   	static const std::string NORMAL_ANIMATION_GROUP;
   	static const std::string ATTACK_ANIMATION_GROUP;

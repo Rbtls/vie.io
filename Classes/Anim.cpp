@@ -24,8 +24,8 @@ Anim::Anim(cocos2d::Size winSize) :
     _target()
 {
     _armatureDisplay = dragonBones::CCFactory::getFactory()->buildArmatureDisplay("mecha_1502b");
-    _armatureDisplay->setPosition(cocos2d::Vec2(winSize.width * 0.5, winSize.height * 0.4));
-    _armatureDisplay->setScale(0.7f);
+    _armatureDisplay->setPosition(cocos2d::Vec2(winSize.width * 0.5, winSize.height * 0.2));
+    _armatureDisplay->setScale(0.5f);
     _armatureDisplay->getEventDispatcher()->setEnabled(true);
     _armatureDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FADE_IN_COMPLETE, std::bind(&Anim::_animationEventHandler, this, std::placeholders::_1));
     _armatureDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FADE_OUT_COMPLETE, std::bind(&Anim::_animationEventHandler, this, std::placeholders::_1));
@@ -40,6 +40,11 @@ Anim::Anim(cocos2d::Size winSize) :
     weaponRDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FRAME_EVENT, std::bind(&Anim::_frameEventHandler, this, std::placeholders::_1));
     weaponLDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FRAME_EVENT, std::bind(&Anim::_frameEventHandler, this, std::placeholders::_1));
     
+    _armatureDisplay->getAnimation()->fadeIn(
+        "idle", -1.0f, -1, 
+        0, NORMAL_ANIMATION_GROUP
+    )->resetToPose = false;
+    _walkState = nullptr;
     
     /*_attackState = _armatureDisplay->getAnimation()->fadeIn(
         "attack_01", -1.0f, -1,
@@ -98,6 +103,15 @@ void Anim::move(int dir)
   _walkState->resetToPose = false;
 }
 
+void Anim::stop()
+{
+    _armatureDisplay->getAnimation()->fadeIn(
+            "idle", -1.0f, -1, 
+            0, NORMAL_ANIMATION_GROUP
+        )->resetToPose = false;
+        _walkState = nullptr;
+}
+
 void Anim::jump()
 {
     if (_isJumpingA)
@@ -116,12 +130,23 @@ void Anim::jump()
 
 void Anim::attack(bool isAttacking)
 {
-    if (_isAttackingA == isAttacking)
+   /* if (_isAttackingA == isAttacking)
     {
         return;
     }
 
-    _isAttackingA = isAttacking;
+    _isAttackingA = isAttacking; */
+    if (isAttacking == true) {
+      _attackState = _armatureDisplay->getAnimation()->fadeIn(
+          "attack_01", -1.0f, -1,
+          0, ATTACK_ANIMATION_GROUP
+      );
+      _attackState->resetToPose = false;
+    }
+    else {
+      ////////////////////////////////////////////////////////////////WIP
+      _attackState = nullptr;
+    }
 }
 
 void Anim::_updateAnimation()
