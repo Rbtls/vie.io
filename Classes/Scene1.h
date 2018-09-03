@@ -25,6 +25,7 @@ public:
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map);
+	//void onTouchCancelled();
 	//cocos2d::Sprite* projectile;
     //cocos2d::Sprite* projectile2;
 	void convertToUint8 (float f, std::vector<unsigned char>& v);

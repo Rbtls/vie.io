@@ -116,9 +116,9 @@ bool Scene1::init()
 	
 	//creating joystick
   auto _joystick = Sprite::create("joystick.png");
-  _joystick->setPosition(Vec2(visibleSize.width*0.14, visibleSize.height*0.33));
-  _joystick->setScale(2);
+  _joystick->setScale(1.5);
   _joystick->setOpacity(70);
+  _joystick->setPosition(Vec2(_joystick->getBoundingBox().size.width/2, _joystick->getBoundingBox().size.height/1.4));
   
   //creating listener for joystick
   auto listener_joystick = EventListenerTouchOneByOne::create();
@@ -130,9 +130,9 @@ bool Scene1::init()
   this->addChild(_joystick, 3);
   
   //creating aim
-  auto _aim = Sprite::create("joystick.png");
-  _aim->setPosition(Vec2(visibleSize.width*0.85, visibleSize.height*0.33));
-  _aim->setScale(2);
+  auto _aim = Sprite::create("aim.png");
+  _aim->setPosition(Vec2(visibleSize.width*0.8, visibleSize.height*0.23));
+  _aim->setScale(2.5);
   _aim->setOpacity(70);
 
   //creating listener for aim
@@ -240,7 +240,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,1)));
   auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-1)));
  
-  std::stringstream ss;
+  //std::stringstream ss;
 
   if (bounds.containsPoint(location)) {
     //checking whether the circle is located to the left of the screen (that means it's a joystick)
@@ -253,39 +253,39 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
       //ss << nodeSpaceLocation.x << " " << nodeSpaceLocation.y;
       //labelTouchInfo->setString(ss.str().c_str());
 
-      if(nodeSpaceLocation.x < 50 && nodeSpaceLocation.y < 50) {
+      if((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y < (bounds.size.height*0.5))) {
         _map->runAction(moveL);
         _map->runAction(moveB);
         move_state = 14;
       }
-      else if (nodeSpaceLocation.x < 50 && nodeSpaceLocation.y > 50) {
+      else if ((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y > (bounds.size.height*0.5))) {
         _map->runAction(moveL);
         _map->runAction(moveF);
         move_state = 13;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y < 50) {
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y < (bounds.size.height*0.5))) {
         _map->runAction(moveR);
         _map->runAction(moveB);
         move_state = 24;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y > 50) {
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y > (bounds.size.height*0.5))) {
         _map->runAction(moveR);
         _map->runAction(moveF);
         move_state = 23;
       }
-      else if (nodeSpaceLocation.x < 50 && nodeSpaceLocation.y == 50) {
+      else if ((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y == (bounds.size.height*0.5))) {
         _map->runAction(moveL);
         move_state = 1;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y == 50) {
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y == (bounds.size.height*0.5))) {
         _map->runAction(moveR);
         move_state = 2;
       }
-      else if (nodeSpaceLocation.y < 50 && nodeSpaceLocation.x == 50) {
+      else if ((nodeSpaceLocation.y < (bounds.size.height*0.5)) && (nodeSpaceLocation.x == (bounds.size.width*0.5))) {
         _map->runAction(moveB);
         move_state = 4;
       }
-      else if (nodeSpaceLocation.y > 50 && nodeSpaceLocation.x == 50) {
+      else if ((nodeSpaceLocation.y > (bounds.size.height*0.5)) && (nodeSpaceLocation.x == (bounds.size.width*0.5))) {
         _map->runAction(moveF);
         move_state = 3;
       }
@@ -381,11 +381,10 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
   std::stringstream ss;
 
   if (bounds.containsPoint(touch->getLocation())) {
+    //changes applied to the left circle
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
             
-      //stops repeated movement from onTouchBegin
-      //_map->stopAllActions();
-      //changing movement
+      //reduces movement velocity to initial value
       switch (move_state) {
         case 14:
           _map->runAction(moveR);
@@ -420,62 +419,49 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       // get the location of the touch relative to your button
       auto nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
       
-      ss << nodeSpaceLocation.x << " " << nodeSpaceLocation.y;
+      //debug info
+      //ss << nodeSpaceLocation.x << " " << nodeSpaceLocation.y;
+      ss << move_state;
       labelTouchInfo->setString(ss.str().c_str());
 
-      if (nodeSpaceLocation.x < 50 && nodeSpaceLocation.y < 50) {
-       // if (move_state != 14) {
-          _map->runAction(moveL);
-          _map->runAction(moveB);
-          move_state = 14;
-       // }
+      if((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y < (bounds.size.height*0.5))) {
+        _map->runAction(moveL);
+        _map->runAction(moveB);
+        move_state = 14;
       }
-      else if (nodeSpaceLocation.x < 50 && nodeSpaceLocation.y > 50) {
-        //if (move_state != 13) {
-          _map->runAction(moveL);
-          _map->runAction(moveF);
-          move_state = 13;
-        //}
+      else if ((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y > (bounds.size.height*0.5))) {
+        _map->runAction(moveL);
+        _map->runAction(moveF);
+        move_state = 13;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y < 50) {
-        //if (move_state != 24) {
-          _map->runAction(moveR);
-          _map->runAction(moveB);
-          move_state = 24;
-        //}
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y < (bounds.size.height*0.5))) {
+        _map->runAction(moveR);
+        _map->runAction(moveB);
+        move_state = 24;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y > 50) {
-        //if (move_state != 23) {
-          _map->runAction(moveR);
-          _map->runAction(moveF);
-          move_state = 23;
-        //}
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y > (bounds.size.height*0.5))) {
+        _map->runAction(moveR);
+        _map->runAction(moveF);
+        move_state = 23;
       }
-      else if (nodeSpaceLocation.x < 50 && nodeSpaceLocation.y == 50) {
-        //if (move_state != 1) {
-          _map->runAction(moveL);
-          move_state = 1;
-        //}
+      else if ((nodeSpaceLocation.x < (bounds.size.width*0.5)) && (nodeSpaceLocation.y == (bounds.size.height*0.5))) {
+        _map->runAction(moveL);
+        move_state = 1;
       }
-      else if (nodeSpaceLocation.x > 50 && nodeSpaceLocation.y == 50) {
-        //if (move_state != 2) {
-          _map->runAction(moveR);
-          move_state = 2;
-        //}
+      else if ((nodeSpaceLocation.x > (bounds.size.width*0.5)) && (nodeSpaceLocation.y == (bounds.size.height*0.5))) {
+        _map->runAction(moveR);
+        move_state = 2;
       }
-      else if (nodeSpaceLocation.y < 50 && nodeSpaceLocation.x == 50) {
-        //if (move_state != 4) {
-          _map->runAction(moveB);
-          move_state = 4;
-        //}
+      else if ((nodeSpaceLocation.y < (bounds.size.height*0.5)) && (nodeSpaceLocation.x == (bounds.size.width*0.5))) {
+        _map->runAction(moveB);
+        move_state = 4;
       }
-      else if (nodeSpaceLocation.y > 50 && nodeSpaceLocation.x == 50) {
-        //if (move_state != 3) {
-          _map->runAction(moveF);
-          move_state = 3;
-        //}
+      else if ((nodeSpaceLocation.y > (bounds.size.height*0.5)) && (nodeSpaceLocation.x == (bounds.size.width*0.5))) {
+        _map->runAction(moveF);
+        move_state = 3;
       }
     }
+    // changes applied to the right circle
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->attack(false);
 
