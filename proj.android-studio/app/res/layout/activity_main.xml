@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   android:id="@+id/main_layout"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent">
+<RelativeLayout
+        android:id="@+id/gameviewLay" 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+<com.google.android.gms.ads.AdView 
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/gps_popup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/banner_home_footer" />
+<WebView
+        android:id = "@+id/webView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
+<!-- "PLEASE WAIT" SCREEN -->
+<LinearLayout android:id="@+id/screen_wait" style="@style/LLScreen">
+        <TextView style="@style/Blurb" android:text="@string/please_wait" />
+</LinearLayout>
+
+<!-- INVITATION POPUP -->
+<LinearLayout android:id="@+id/invitation_popup" style="@style/InvPopup">
+        <TextView android:id="@+id/incoming_invitation_text" style="@style/InvPopupText" />
+        <Button android:id="@+id/button_accept_popup_invitation"
+        style="@style/InvPopupButton"
+        android:text="@string/accept_popup_invite" />
+</LinearLayout>
+
+</LinearLayout>
