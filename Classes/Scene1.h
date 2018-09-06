@@ -7,7 +7,6 @@
 class Scene1 : public cocos2d::Layer
 {
 public:
-
     cocos2d::Sprite3D *cube3D;
     
     cocos2d::RenderTexture *renderTexDefault;
@@ -30,6 +29,7 @@ public:
     //cocos2d::Sprite* projectile2;
 	void convertToUint8 (float f, std::vector<unsigned char>& v);
 	void basicShader(cocos2d::Sprite3D * sprite3d);
+	void aim();
     
     //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
 	int move_state;

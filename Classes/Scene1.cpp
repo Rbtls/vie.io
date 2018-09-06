@@ -1,5 +1,6 @@
 #include "Scene1.h"
 #include "Scene0.h"
+#include "HUD.h"
 #include "SimpleAudioEngine.h"
 #include "AdmobHelper.h"
 #include <jni.h>
@@ -58,17 +59,49 @@ bool Scene1::init()
   {
       return false;
   }
+
+  auto hudlayer = HUD::create();
+  this->addChild(hudlayer);
+
+  auto visibleSize = Director::getInstance()->getVisibleSize();
+  Vec2 origin = Director::getInstance()->getVisibleOrigin();
+  /////////////////////////////
+
+  //set parameters to default camera
+  //this->setCameraMask((unsigned short)CameraFlag::USER1);
+  // creating 1st camera for everything except hud nodes
+  auto _camera =Camera::createPerspective(60, (float)visibleSize.width/visibleSize.height, 1.0, 1000);
+  _camera->setPosition3D(Vec3(visibleSize.width/2 + origin.x,
+                        visibleSize.height/2 + origin.y,
+                        0)+Vec3(0, 0, 800));
+  _camera->lookAt(Vec3(visibleSize.width/2 + origin.x,
+                        visibleSize.height/2 + origin.y,
+                        0), Vec3(0, 1, 0));
+  this->setCameraMask((unsigned short)CameraFlag::USER1);
+  this->addChild(_camera);
+
+  // creating 2nd camera for HUD
+  auto _HUD =Camera::createPerspective(60, (float)visibleSize.width/visibleSize.height, 1.0, 1000);
+  _HUD->setCameraFlag(CameraFlag::USER2);
+
+  // set parameters for HUD camera
+  _HUD->setPosition3D(Vec3(visibleSize.width/2 + origin.x,
+                        visibleSize.height/2 + origin.y,
+                        0)+Vec3(0, 0, 800));
+  _HUD->lookAt(Vec3(visibleSize.width/2 + origin.x,
+                        visibleSize.height/2 + origin.y,
+                        0), Vec3(0, 1, 0));
+  //add hud to a hud layer, and set the camera mask
+  hudlayer->setCameraMask((unsigned short)CameraFlag::USER2);
+  //add HUD to the scene
+  this->addChild(_HUD); 
 	
 	labelTouchInfo = Label::createWithCharMap("fonts/tuffy_bold_italic-charmap.png", 48, 64, ' ');
   labelTouchInfo->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/2,
                   Director::getInstance()->getVisibleSize().height ));
 	addChild(labelTouchInfo);
 
-  auto visibleSize = Director::getInstance()->getVisibleSize();
-  Vec2 origin = Director::getInstance()->getVisibleOrigin();
-	/////////////////////////////
-	
-	// add a "close" icon to exit the progress. it's an autorelease object
+  // add a "close" icon to exit the progress. it's an autorelease object
 	auto closeItem = MenuItemImage::create("HelloWorld.png", "CloseSelected.png",
 		CC_CALLBACK_1(Scene1::menuCloseCallback, this));
   closeItem->setScale(0.5f);
@@ -114,12 +147,15 @@ bool Scene1::init()
 	origin.y + closeItem->getContentSize().height / 2));
 	this->addChild(closeItem);*/
 	
+  // assigning CameraFlag to hide HUD elements from default camera
+  //Camera::getDefaultCamera()->setCameraFlag(CameraFlag::USER1);
+
 	//creating joystick
   auto _joystick = Sprite::create("joystick.png");
   _joystick->setScale(1.5);
   _joystick->setOpacity(70);
   _joystick->setPosition(Vec2(_joystick->getBoundingBox().size.width/2, _joystick->getBoundingBox().size.height/1.3));
-  
+ 
   //creating listener for joystick
   auto listener_joystick = EventListenerTouchOneByOne::create();
   listener_joystick->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _joystick, cube3D);
@@ -127,14 +163,14 @@ bool Scene1::init()
   listener_joystick->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _joystick, cube3D);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_joystick, _joystick);
   
-  this->addChild(_joystick, 3);
+  hudlayer->addChild(_joystick, 3);
   
   //creating aim
   auto _aim = Sprite::create("aim.png");
   _aim->setPosition(Vec2(visibleSize.width*0.8, visibleSize.height*0.23));
   _aim->setScale(2.5);
   _aim->setOpacity(70);
-
+ 
   //creating listener for aim
   auto listener_aim = EventListenerTouchOneByOne::create();
   listener_aim->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _aim, cube3D);
@@ -142,7 +178,13 @@ bool Scene1::init()
   listener_aim->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _aim, cube3D);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_aim, _aim);
   
-  this->addChild(_aim, 3);
+  hudlayer->addChild(_aim, 3);
+  
+  //hide everything from HUD camera
+  //->setCameraMask((unsigned short)CameraFlag::USER2);
+          _aim->setCameraMask((unsigned short)CameraFlag::USER1); 
+          _joystick->setCameraMask((unsigned short)CameraFlag::USER1);
+
 
   //cube3D->setTexture("brickwork-texture.jpg");
 /*  cocos2d::Image *im = new Image();
@@ -164,6 +206,7 @@ bool Scene1::init()
   //cube3D->setRotation3D(Vec3(180,45,0));
   cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/4 /*+ origin.y*/));
   this->addChild(cube3D, 1);
+  //cube3D->setCameraMask((unsigned short)CameraFlag::USER2);
 
   //adding light to scene
   //auto light = DirectionLight::create(Vec3(-1.0f, -1.0f, 0.0f), Color3B::RED);
@@ -172,7 +215,7 @@ bool Scene1::init()
   //creating skybox
   auto box = Skybox::create();
   //creating skybox texture
-  auto textureCube = TextureCube::create("skybox/left.jpg",  "skybox/right.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg");
+  auto textureCube = TextureCube::create("skybox/right.jpg",  "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg");
   
   // set cube map texture parameters
   Texture2D::TexParams tRepeatParams;
@@ -192,6 +235,7 @@ bool Scene1::init()
   //state->setUniformTexture("u_cubeTex", textureCube);
   box->setTexture(textureCube);
   this->addChild(box);
+  //box->setCameraMask((unsigned short)CameraFlag::USER2);
 
   //cube3D->setForce2DQueue(true); // required, this put the model in the same render queue as the RenderTextures
  
@@ -208,12 +252,6 @@ bool Scene1::init()
   renderTexWithBuffer->setPosition(1280/2, 720/2);
   renderTexWithBuffer->setKeepMatrix(true); // required*/
 
-  //adding camera
-  
-  Size s = Director::getInstance()->getVisibleSize();
-  auto camera =Camera::createPerspective(60, s.width/s.height, 0.1f, 200);
-  camera->setCameraFlag(CameraFlag::USER1);
-  
   //show banner
   //AdmobHelper::showAd();
 
@@ -290,7 +328,10 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
     }
     //checking whether the circle is located on the right side of the screen (that means it's an aim circle)
     else if ((unused_event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
-      _player->attack(true);
+      //_player->attack(true);
+      // get the location of the touch relative to your button
+      auto nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
+      Camera::getDefaultCamera()->setRotation3D(Vec3(nodeSpaceLocation.y/2, ((-1)*nodeSpaceLocation.x), 0));
     }
   }
 
@@ -547,4 +588,20 @@ void Scene1::basicShader(cocos2d::Sprite3D * sprite3d)
         p->updateUniforms();
         sprite3d->setGLProgram(p);
     }
+}
+
+void Scene1::aim()
+{
+    //adding camera for closer aim
+  Size s = Director::getInstance()->getVisibleSize();
+  auto camera =Camera::createPerspective(60, s.width/s.height, 0.1f, 200);
+  
+  // set parameters for camera
+  camera->setPosition3D(Vec3(0, 100, 100));
+  camera->lookAt(Vec3(0, 0, 0), Vec3(0, 1, 0));
+  
+  // hiding player sprite if camera is enabled
+  camera->setCameraFlag(CameraFlag::USER1);
+ // _player->_getArmatureDisplay()->setCameraMask(CameraFlag::USER1);
+  addChild(camera); //add camera to the scene
 }
