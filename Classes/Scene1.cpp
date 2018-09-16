@@ -19,6 +19,7 @@
 #include <thread>
 #include <mutex>
 #include "renderer/CCTexture2D.h"
+#include "renderer/CCRenderState.h"
 //#include "Anim.h"
 //#include "StateManager.h"
 #include "GPGSManager.h"
@@ -58,7 +59,7 @@ bool Scene1::init()
   {
       return false;
   }
-
+  //Director::getInstance()->setDepthTest(true);
   Director::getInstance()->setDisplayStats(false);
 
   auto hudlayer = Layer::create();
@@ -119,7 +120,25 @@ bool Scene1::init()
   /*auto _player = Sprite::create("mysprite.png");
 	_player->setPosition(Vec2(winSize.width * 0.15, winSize.height * 0.5));
 	this->addChild(_player, 2);*/
-	
+
+  /*auto ball = Sprite3D::create("ball.c3b");
+  ball->setGlobalZOrder(-10);
+  ball->setScale(15);
+  ball->setPosition(Vec2(visibleSize.width/2, visibleSize.height/5));
+  ball->setCameraMask((unsigned short)CameraFlag::USER1);
+  world->addChild(ball, 2);*/
+
+  //adding 3d map
+  cube3D = Sprite3D::create("2.obj");
+  cube3D->setScale(14);
+  cube3D->setRotation3D(Vec3(0,90,0));
+  //cube3D->setGlobalZOrder(0);
+  cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/4 /*+ origin.y*/));
+  cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
+  _mapX = cube3D->getPositionX();
+  _mapY = cube3D->getPositionY();
+  world->addChild(cube3D, 2);
+
   const auto factory = dragonBones::CCFactory::getFactory();
   factory->loadDragonBonesData("mecha_1502b/mecha_1502b_ske.json");
   factory->loadTextureAtlasData("mecha_1502b/mecha_1502b_tex.json");
@@ -129,33 +148,34 @@ bool Scene1::init()
   factory->loadTextureAtlasData("weapon_1000/weapon_1000_tex.json");
   auto _player = new Anim(visibleSize);
   _player->_getArmatureDisplay()->setCameraMask((unsigned short)CameraFlag::USER1);
-  world->addChild(_player->_getArmatureDisplay());
-
-  //adding 3d map
-  cube3D = Sprite3D::create("2.obj");
-  cube3D->setScale(14);
-  cube3D->setRotation3D(Vec3(0,90,0));
-  cube3D->setGlobalZOrder(10);
-  cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/4 /*+ origin.y*/));
-  cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
-  world->addChild(cube3D, 1);
+  //world->addChild(_player->_getArmatureDisplay(), 2);
+  auto billboard = BillBoard::create(BillBoard::Mode::VIEW_PLANE_ORIENTED);
+  billboard->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/3));
+  billboard->setCameraMask((unsigned short)CameraFlag::USER1);
+  billboard->addChild(_player->_getArmatureDisplay());
+  world->addChild(billboard);
   
   //creating skybox
-  auto box = Skybox::create();
+  //auto box = Skybox::create();
+  auto box = Sprite3D::create("skybox/skybox.obj");
+  //box->setCullFace(RenderState::CULL_FACE_SIDE_FRONT);
+  //box->setCullFaceEnabled(false);
+  box->setScale(520);
+  box->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/2));
   //creating skybox texture
-  auto textureCube = TextureCube::create("skybox/right.jpg",  "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg");
+  //auto textureCube = TextureCube::create("skybox/right.jpg",  "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg");
   
   // set cube map texture parameters
-  Texture2D::TexParams tRepeatParams;
-  tRepeatParams.magFilter = GL_NEAREST;
-  tRepeatParams.minFilter = GL_NEAREST;
-  tRepeatParams.wrapS = GL_MIRRORED_REPEAT;
-  tRepeatParams.wrapT = GL_MIRRORED_REPEAT;
-  textureCube->setTexParameters(tRepeatParams);
+  //Texture2D::TexParams tRepeatParams;
+  //tRepeatParams.magFilter = GL_NEAREST;
+  //tRepeatParams.minFilter = GL_NEAREST;
+  //tRepeatParams.wrapS = GL_MIRRORED_REPEAT;
+  //tRepeatParams.wrapT = GL_MIRRORED_REPEAT;
+  //box->setTexParameters(tRepeatParams);
 
-  box->setTexture(textureCube);
+  //box->setTexture(textureCube);
   box->setCameraMask((unsigned short)CameraFlag::USER1);
-  world->addChild(box);
+  world->addChild(box, 2);
  
   //Texture2D::setDefaultAlphaPixelFormat(Texture2D::PixelFormat::RGB5A1);
 	
@@ -239,7 +259,7 @@ bool Scene1::init()
 	return true;
 }
 
-bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Skybox* _box) {
+bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box) {
 
   auto bounds = unused_event->getCurrentTarget()->getBoundingBox();
   
@@ -254,8 +274,8 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-1)));
   
   auto rotL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
-  
-  //std::stringstream ss;
+  auto rotSkyL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
+  std::stringstream ss;
 
   if (bounds.containsPoint(location)) {
     //checking whether the circle is located to the left of the screen (that means it's a joystick)
@@ -311,16 +331,17 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
     else if ((unused_event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       //_player->attack(true);
       
-      //_map->runAction(rotL);
-      _player->_getArmatureDisplay()->setRotation3D(Vec3(0, nodeSpaceLocation.x, 0));
-      _camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
+      _map->setAnchorPoint(_player->getPosition());//Vec2(AnchX, AnchY));
+      _map->runAction(rotL);
+      _box->runAction(rotSkyL);
+
+      //_player->_getArmatureDisplay()->setRotation3D(Vec3(0, nodeSpaceLocation.x, 0));
+      //_camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
       //auto visibleSize = Director::getInstance()->getVisibleSize();
       //Vec2 origin = Director::getInstance()->getVisibleOrigin();
       
-
-     //   _camera->setPosition3D(Vec3(0, _camera->getPosition3D().x + nodeSpaceLocation.x, 0));
+      //_camera->setPosition3D(Vec3(0, _camera->getPosition3D().x + nodeSpaceLocation.x, 0));
       
-
       //_camera->setPosition3D(_player->_getArmatureDisplay()->getPosition3D()+Vec3(0, 0, 250));
       //_camera->lookAt(_player->_getArmatureDisplay()->getPosition3D(),Vec3(0,1,0));
       
@@ -386,7 +407,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   return true;
 }
 
-void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Skybox* _box)
+void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Sprite3D* _box)
 {
   auto bounds = event->getCurrentTarget()->getBoundingBox();
   // checking only if the joystick has been released because the stop animation is related to movement
@@ -394,6 +415,21 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->stop();
       
+      if (_mapX > _map->getPositionX()) {
+        AnchX -= (_mapX/_map->getPositionX())*0.5;
+      }
+      else if (_map->getPositionX() > _mapX) {
+        AnchX += (_map->getPositionX()/_mapX)*0.5;
+      }
+
+      if (_mapY > _map->getPositionY()) {
+        AnchY += (_mapY/_map->getPositionY())*0.5;
+      }
+      else if (_map->getPositionY() > _mapY) {
+        AnchY -= (_map->getPositionY()/_mapY)*0.5;
+      }
+      _mapX = _map->getPositionX();
+      _mapY = _map->getPositionY();
       //stops repeated movement from onTouchBegin
       _map->stopAllActions();
       _box->stopAllActions();

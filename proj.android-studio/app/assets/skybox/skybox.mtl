@@ -1,0 +1,48 @@
+newmtl CubeFront
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd front.jpg
+newmtl CubeBack
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd back.jpg
+newmtl CubeLeft
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd left.jpg
+newmtl CubeRight
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd right.jpg
+newmtl CubeTop
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd top.jpg
+newmtl CubeBottom
+Kd 1 1 1
+Ns 96.0784
+d 1
+illum 1
+Ka 0 0 0
+Ks 1 1 1
+map_Kd bottom.jpg

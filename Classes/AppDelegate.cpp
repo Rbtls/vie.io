@@ -71,12 +71,13 @@ bool AppDelegate::applicationDidFinishLaunching() {
     {        
         director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
     }
-
+ 
     register_all_packages();
 
     // create a scene. it's an autorelease object
     auto scene = Scene0::createScene();
-
+/*director->setDepthTest(true);
+director->setProjection(Director::Projection::_3D);*/
     // run
     director->runWithScene(scene);
 

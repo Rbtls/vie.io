@@ -24,9 +24,7 @@ Anim::Anim(cocos2d::Size winSize) :
     _target()
 {
     _armatureDisplay = dragonBones::CCFactory::getFactory()->buildArmatureDisplay("mecha_1502b");
-    _armatureDisplay->setPosition(cocos2d::Vec2(winSize.width * 0.5, winSize.height * 0.2));
     _armatureDisplay->setScale(0.5f);
-    _armatureDisplay->setGlobalZOrder(-10);
     _armatureDisplay->getEventDispatcher()->setEnabled(true);
     _armatureDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FADE_IN_COMPLETE, std::bind(&Anim::_animationEventHandler, this, std::placeholders::_1));
     _armatureDisplay->getEventDispatcher()->addCustomEventListener(dragonBones::EventObject::FADE_OUT_COMPLETE, std::bind(&Anim::_animationEventHandler, this, std::placeholders::_1));
