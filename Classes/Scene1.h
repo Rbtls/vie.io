@@ -24,9 +24,9 @@ public:
     void messageReceived(cocos2d::Event* unused_event);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Scene1);
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box);
-    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map);
-    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Sprite3D* _box);
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, BillBoard* billboard, Node* rotationPoint);
+    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
 	//void onTouchCancelled();
 	//cocos2d::Sprite* projectile;
     //cocos2d::Sprite* projectile2;

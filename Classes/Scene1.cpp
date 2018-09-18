@@ -78,10 +78,10 @@ bool Scene1::init()
                         visibleSize.height/2 + origin.y,
                         0), Vec3(0, 1, 0));
   _camera->setCameraFlag(CameraFlag::USER1);
-
+  
   world->setCameraMask((unsigned short)CameraFlag::USER1);
   this->addChild(_camera);
-
+  
   // creating 2nd camera for HUD
   auto _HUD = Camera::createPerspective(60, (float)visibleSize.width/visibleSize.height, 1.0, 1000);
   // set parameters for HUD camera
@@ -128,17 +128,7 @@ bool Scene1::init()
   ball->setCameraMask((unsigned short)CameraFlag::USER1);
   world->addChild(ball, 2);*/
 
-  //adding 3d map
-  cube3D = Sprite3D::create("2.obj");
-  cube3D->setScale(14);
-  cube3D->setRotation3D(Vec3(0,90,0));
-  //cube3D->setGlobalZOrder(0);
-  cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/4 /*+ origin.y*/));
-  cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
-  _mapX = cube3D->getPositionX();
-  _mapY = cube3D->getPositionY();
-  world->addChild(cube3D, 2);
-
+  //creating animation to display it in the billboard object (always facing the camera)
   const auto factory = dragonBones::CCFactory::getFactory();
   factory->loadDragonBonesData("mecha_1502b/mecha_1502b_ske.json");
   factory->loadTextureAtlasData("mecha_1502b/mecha_1502b_tex.json");
@@ -148,13 +138,36 @@ bool Scene1::init()
   factory->loadTextureAtlasData("weapon_1000/weapon_1000_tex.json");
   auto _player = new Anim(visibleSize);
   _player->_getArmatureDisplay()->setCameraMask((unsigned short)CameraFlag::USER1);
-  //world->addChild(_player->_getArmatureDisplay(), 2);
+  
+  //adding series of sprites in one armature to the billboard object
   auto billboard = BillBoard::create(BillBoard::Mode::VIEW_PLANE_ORIENTED);
   billboard->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/3));
   billboard->setCameraMask((unsigned short)CameraFlag::USER1);
   billboard->addChild(_player->_getArmatureDisplay());
   world->addChild(billboard);
   
+  //adding 3d map
+  cube3D = Sprite3D::create("2.obj");
+  cube3D->setScale(14);
+  cube3D->setRotation3D(Vec3(0,90,0));
+  cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/3 /*+ origin.y*/));
+  //cube3D->setPositionZ(visibleSize.height/4);
+  cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
+  
+///////////////?????vvvvvvvvvvvvvvvv!!!?? delete this...
+  _mapX = cube3D->getPositionX();
+  _mapY = cube3D->getPositionY();
+//////////////////////////////////////
+
+  //creating rotation point
+  auto rotationPoint =  Node::create();
+  rotationPoint->setPosition(Vec2(_player->_getArmatureDisplay()->getPosition().x, _player->_getArmatureDisplay()->getPosition().y));
+  
+  //adding 3d map as a child to the rotation point
+  rotationPoint->addChild(cube3D);
+  _player->_getArmatureDisplay()->addChild(rotationPoint);
+
+
   //creating skybox
   //auto box = Skybox::create();
   auto box = Sprite3D::create("skybox/skybox.obj");
@@ -199,9 +212,9 @@ bool Scene1::init()
   
   //creating listener for joystick
   auto listener_joystick = EventListenerTouchOneByOne::create();
-  listener_joystick->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _joystick, cube3D, _camera, box);
-  listener_joystick->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _joystick, cube3D);
-  listener_joystick->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _joystick, cube3D, box);
+  listener_joystick->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _joystick, cube3D, _camera, box, billboard, rotationPoint);
+  listener_joystick->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _joystick, cube3D, _camera, billboard, rotationPoint);
+  listener_joystick->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _joystick, cube3D, _camera, box, billboard, rotationPoint);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_joystick, _joystick);
   
   hudlayer->addChild(_joystick, 3);
@@ -214,9 +227,9 @@ bool Scene1::init()
  
   //creating listener for aim
   auto listener_aim = EventListenerTouchOneByOne::create();
-  listener_aim->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _aim, cube3D, _camera, box);
-  listener_aim->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _aim, cube3D);
-  listener_aim->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _aim, cube3D, box);
+  listener_aim->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _aim, cube3D, _camera, box, billboard, rotationPoint);
+  listener_aim->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _aim, cube3D, _camera, billboard, rotationPoint);
+  listener_aim->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _aim, cube3D, _camera, box, billboard, rotationPoint);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_aim, _aim);
   
   hudlayer->addChild(_aim, 3);
@@ -259,7 +272,7 @@ bool Scene1::init()
 	return true;
 }
 
-bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box) {
+bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint) {
 
   auto bounds = unused_event->getCurrentTarget()->getBoundingBox();
   
@@ -275,7 +288,8 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   
   auto rotL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
   auto rotSkyL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
-  std::stringstream ss;
+  
+  //std::stringstream ss;
 
   if (bounds.containsPoint(location)) {
     //checking whether the circle is located to the left of the screen (that means it's a joystick)
@@ -331,11 +345,11 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
     else if ((unused_event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       //_player->attack(true);
       
-      _map->setAnchorPoint(_player->getPosition());//Vec2(AnchX, AnchY));
-      _map->runAction(rotL);
+      //_map->setAnchorPoint(Vec2((_player->_getArmatureDisplay()->getPositionX()/_map->getPositionX())*0.5f, (_player->_getArmatureDisplay()->getPositionY()/_map->getPositionY())*0.5f));//Vec2(AnchX, AnchY));
+     
+      rotationPoint->runAction(rotL);
       _box->runAction(rotSkyL);
 
-      //_player->_getArmatureDisplay()->setRotation3D(Vec3(0, nodeSpaceLocation.x, 0));
       //_camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
       //auto visibleSize = Director::getInstance()->getVisibleSize();
       //Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -407,7 +421,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   return true;
 }
 
-void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Sprite3D* _box)
+void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint)
 {
   auto bounds = event->getCurrentTarget()->getBoundingBox();
   // checking only if the joystick has been released because the stop animation is related to movement
@@ -437,7 +451,9 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
     }
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->attack(false);
-      
+      _player->_getArmatureDisplay()->stopAllActions();
+      _camera->stopAllActions();
+      rotationPoint->stopAllActions();
       //stops repeated movement from onTouchBegin
       _map->stopAllActions();
       _box->stopAllActions();
@@ -445,7 +461,7 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
   }
 }
 
-void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map)
+void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, BillBoard* billboard, Node* rotationPoint)
 {
   auto bounds = event->getCurrentTarget()->getBoundingBox();
   

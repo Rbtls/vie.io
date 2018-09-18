@@ -40,34 +40,34 @@ bool Scene0::init()
 	                                              CC_CALLBACK_1(Scene0::Play,this)); */
 	/*auto menu_item_1 = MenuItemFont::create("Play", CC_CALLBACK_1(Scene0::Play, this));*/
 
-	auto menu_item_1 = MenuItemLabel::create(LabelTTF::create("Play", "fonts/trench100free.ttf", 38), CC_CALLBACK_1(Scene0::Play, this));
-	auto menu_item_2 = MenuItemLabel::create(LabelTTF::create("Create Game", "fonts/trench100free.ttf", 38), CC_CALLBACK_1(Scene0::CreateGame, this));
-	auto menu_item_3 = MenuItemLabel::create(LabelTTF::create("Settings", "fonts/trench100free.ttf", 38), CC_CALLBACK_1(Scene0::Settings, this));
-	auto menu_item_4 = MenuItemLabel::create(LabelTTF::create("HowTo", "fonts/trench100free.ttf", 38), CC_CALLBACK_1(Scene0::HowTo, this));
-	auto menu_item_5 = MenuItemLabel::create(LabelTTF::create("Quit", "fonts/trench100free.ttf", 38), CC_CALLBACK_1(Scene0::Quit, this));
+	auto menu_item_1 = MenuItemLabel::create(LabelTTF::create("Play", "fonts/jura.ttf", 38), CC_CALLBACK_1(Scene0::Play, this));
+	auto menu_item_2 = MenuItemLabel::create(LabelTTF::create("Create Game", "fonts/jura.ttf", 38), CC_CALLBACK_1(Scene0::CreateGame, this));
+	auto menu_item_3 = MenuItemLabel::create(LabelTTF::create("Settings", "fonts/jura.ttf", 38), CC_CALLBACK_1(Scene0::Settings, this));
+	auto menu_item_4 = MenuItemLabel::create(LabelTTF::create("HowTo", "fonts/jura.ttf", 38), CC_CALLBACK_1(Scene0::HowTo, this));
+	auto menu_item_5 = MenuItemLabel::create(LabelTTF::create("Quit", "fonts/jura.ttf", 38), CC_CALLBACK_1(Scene0::Quit, this));
 	/*auto menu_item_2 = MenuItemFont::create("Create Game", CC_CALLBACK_1(Scene0::CreateGame, this));
 	auto menu_item_3 = MenuItemFont::create("Settings", CC_CALLBACK_1(Scene0::Settings, this));
 	auto menu_item_4 = MenuItemFont::create("HowTo", CC_CALLBACK_1(Scene0::HowTo, this));
 	auto menu_item_5 = MenuItemFont::create("Quit", CC_CALLBACK_1(Scene0::Quit, this));*/
 
 	menu_item_1->setPosition(Point(visibleSize.width / 2, (visibleSize.height / 6) * 5.4));
-	menu_item_1->setColor(Color3B(0, 64, 128));
+	menu_item_1->setColor(Color3B(0, 164, 255));
 
 
 	menu_item_2->setPosition(Point(visibleSize.width / 2, (visibleSize.height / 6) * 4.4));
-	menu_item_2->setColor(Color3B(0, 64, 128));
+	menu_item_2->setColor(Color3B(0, 164, 255));
 
 
 	menu_item_3->setPosition(Point(visibleSize.width / 2, (visibleSize.height / 6) * 3.4));
-	menu_item_3->setColor(Color3B(0, 64, 128));
+	menu_item_3->setColor(Color3B(0, 164, 255));
 
 
 	menu_item_4->setPosition(Point(visibleSize.width / 2, (visibleSize.height / 6) * 2.4));
-	menu_item_4->setColor(Color3B(0, 64, 128));
+	menu_item_4->setColor(Color3B(0, 164, 255));
 
 
 	menu_item_5->setPosition(Point(visibleSize.width / 2, (visibleSize.height / 6) * 1.4));
-	menu_item_5->setColor(Color3B(0, 64, 128));
+	menu_item_5->setColor(Color3B(0, 164, 255));
 
 	auto *menu = Menu::create(menu_item_1, menu_item_2, menu_item_3, menu_item_4, menu_item_5, NULL);
 	menu->setPosition(Point(0, 0));
