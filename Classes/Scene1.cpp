@@ -38,7 +38,7 @@ Scene* Scene1::createScene()
     
     // 'layer' is an autorelease object
     auto layer = Scene1::create();
-
+    
     // add layer as a child to scene
     scene->addChild(layer);
 
@@ -63,13 +63,16 @@ bool Scene1::init()
   Director::getInstance()->setDisplayStats(false);
 
   auto hudlayer = Layer::create();
+  
   auto world = Layer::create();
+  world->setScale(0.2f);
 
   auto visibleSize = Director::getInstance()->getVisibleSize();
   Vec2 origin = Director::getInstance()->getVisibleOrigin();
-  /////////////////////////////
+  
+  Camera::getDefaultCamera()->setScaleZ(5.f);
 
-  // creating 1st camera for everything except for the hud sprites
+  // creating 1st camera for everything except the hud sprites
   auto _camera = Camera::createPerspective(60, (float)visibleSize.width/visibleSize.height, 1.0, 1000);
   _camera->setPosition3D(Vec3(visibleSize.width/2 + origin.x,
                         visibleSize.height/2 + origin.y,
@@ -78,7 +81,7 @@ bool Scene1::init()
                         visibleSize.height/2 + origin.y,
                         0), Vec3(0, 1, 0));
   _camera->setCameraFlag(CameraFlag::USER1);
-  
+  _camera->setScaleZ(5.f);
   world->setCameraMask((unsigned short)CameraFlag::USER1);
   this->addChild(_camera);
   
@@ -92,7 +95,7 @@ bool Scene1::init()
                         visibleSize.height/2 + origin.y,
                         0), Vec3(0, 1, 0));
   _HUD->setCameraFlag(CameraFlag::USER2);
-
+  
   hudlayer->setCameraMask((unsigned short)CameraFlag::USER2);
   this->addChild(_HUD); 
 	
@@ -114,8 +117,8 @@ bool Scene1::init()
 	menu->setPosition(Vec2::ZERO);
 	hudlayer->addChild(menu, 1);
 
-    /////////////////////////////
-    // 3. add your codes below...
+  /////////////////////////////
+  // 3. add your codes below...
 		
   /*auto _player = Sprite::create("mysprite.png");
 	_player->setPosition(Vec2(winSize.width * 0.15, winSize.height * 0.5));
@@ -128,7 +131,7 @@ bool Scene1::init()
   ball->setCameraMask((unsigned short)CameraFlag::USER1);
   world->addChild(ball, 2);*/
 
-  //creating animation to display it in the billboard object (always facing the camera)
+  //creating animation to display in the billboard object (always facing the camera)
   const auto factory = dragonBones::CCFactory::getFactory();
   factory->loadDragonBonesData("mecha_1502b/mecha_1502b_ske.json");
   factory->loadTextureAtlasData("mecha_1502b/mecha_1502b_tex.json");
@@ -148,25 +151,21 @@ bool Scene1::init()
   
   //adding 3d map
   cube3D = Sprite3D::create("2.obj");
-  cube3D->setScale(14);
+  cube3D->setScale(44);
   cube3D->setRotation3D(Vec3(0,90,0));
-  cube3D->setPosition(Vec2(visibleSize.width/2 /*+ origin.x*/, visibleSize.height/3 /*+ origin.y*/));
-  //cube3D->setPositionZ(visibleSize.height/4);
+  int n = -60;
+  cube3D->setPosition(Vec2(60, n));
   cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
   
-///////////////?????vvvvvvvvvvvvvvvv!!!?? delete this...
-  _mapX = cube3D->getPositionX();
-  _mapY = cube3D->getPositionY();
-//////////////////////////////////////
-
   //creating rotation point
   auto rotationPoint =  Node::create();
-  rotationPoint->setPosition(Vec2(_player->_getArmatureDisplay()->getPosition().x, _player->_getArmatureDisplay()->getPosition().y));
   
   //adding 3d map as a child to the rotation point
   rotationPoint->addChild(cube3D);
+   
   _player->_getArmatureDisplay()->addChild(rotationPoint);
-
+  rotationPoint->setPosition(Vec2(_player->_getArmatureDisplay()->getPosition().x, _player->_getArmatureDisplay()->getPosition().y));
+  
 
   //creating skybox
   //auto box = Skybox::create();
@@ -188,7 +187,7 @@ bool Scene1::init()
 
   //box->setTexture(textureCube);
   box->setCameraMask((unsigned short)CameraFlag::USER1);
-  world->addChild(box, 2);
+  this->addChild(box, 2);
  
   //Texture2D::setDefaultAlphaPixelFormat(Texture2D::PixelFormat::RGB5A1);
 	
@@ -429,24 +428,17 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->stop();
       
-      if (_mapX > _map->getPositionX()) {
-        AnchX -= (_mapX/_map->getPositionX())*0.5;
-      }
-      else if (_map->getPositionX() > _mapX) {
-        AnchX += (_map->getPositionX()/_mapX)*0.5;
-      }
-
-      if (_mapY > _map->getPositionY()) {
-        AnchY += (_mapY/_map->getPositionY())*0.5;
-      }
-      else if (_map->getPositionY() > _mapY) {
-        AnchY -= (_map->getPositionY()/_mapY)*0.5;
-      }
-      _mapX = _map->getPositionX();
-      _mapY = _map->getPositionY();
       //stops repeated movement from onTouchBegin
       _map->stopAllActions();
       _box->stopAllActions();
+
+      Rect _playerRect = billboard->getBoundingBox();
+      AABB _mapRect = cube3D->getAABB();
+  
+      if (_mapRect.containPoint(Vec3(_playerRect.getMinX(), _playerRect.getMinY(), billboard->getPositionZ()))) {
+        
+        _map->runAction(MoveBy::create(1, Vec2(0,-90)));
+      }
 
     }
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
