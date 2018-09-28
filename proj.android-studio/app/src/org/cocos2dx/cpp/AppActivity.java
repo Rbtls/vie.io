@@ -89,6 +89,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.android.gms.games.Games.getGamesClient;
+import static com.vie.io.R.id.webView;
 //import static com.google.android.gms.internal.zzahn.runOnUiThread;
 
 public class AppActivity extends Cocos2dxActivity {
@@ -103,7 +104,7 @@ public class AppActivity extends Cocos2dxActivity {
     final static int RC_WAITING_ROOM = 10002;
 	private static final int RC_SIGN_IN = 9001;
 	private AdView admobBannerAdView;
-	
+
 	private WebView webView;
 	private volatile WebChromeClient webChromeClient;
     private ProgressDialog progDailog; 
@@ -116,12 +117,12 @@ public class AppActivity extends Cocos2dxActivity {
 		MultiDex.install(getApplicationContext());
 		super.onCreate(savedInstanceState);
         _appActivity = this;
+         
 		nativeInitGPGS(this);
 		mAuth = FirebaseAuth.getInstance();
 		MobileAds.initialize(this, getString(R.string.app_id));
-        setWebView();
 		nativeOnActivityCreated(this, savedInstanceState);
-
+        setWebView();
         _adRequest = new AdRequest.Builder()
 				.addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
 				.addTestDevice(getString(R.string.ad_device)) //test_device

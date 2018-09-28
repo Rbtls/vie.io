@@ -23,6 +23,13 @@ Anim::Anim(cocos2d::Size winSize) :
     _attackState(nullptr),
     _target()
 {
+    factory = dragonBones::CCFactory::getFactory();
+    factory->loadDragonBonesData("mecha_1502b/mecha_1502b_ske.json");
+    factory->loadTextureAtlasData("mecha_1502b/mecha_1502b_tex.json");
+    factory->loadDragonBonesData("skin_1502b/skin_1502b_ske.json");
+    factory->loadTextureAtlasData("skin_1502b/skin_1502b_tex.json");
+    factory->loadDragonBonesData("weapon_1000/weapon_1000_ske.json");
+    factory->loadTextureAtlasData("weapon_1000/weapon_1000_tex.json");
     _armatureDisplay = dragonBones::CCFactory::getFactory()->buildArmatureDisplay("mecha_1502b");
     _armatureDisplay->setScale(0.5f);
     _armatureDisplay->getEventDispatcher()->setEnabled(true);
@@ -67,6 +74,9 @@ const float Anim::NORMALIZE_MOVE_SPEED = 3.6f;
 
 Anim::~Anim()
 {
+  //dragonbones/factory/basefactory.cpp
+  //dragonbones/cocos2dx/ccfactory.h
+  //factory->~CCFactory();
 } 
 
 void Anim::_animationEventHandler(cocos2d::EventCustom * event)

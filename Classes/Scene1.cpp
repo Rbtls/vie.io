@@ -20,6 +20,7 @@
 #include <mutex>
 #include "renderer/CCTexture2D.h"
 #include "renderer/CCRenderState.h"
+#include "3d/CCBundle3D.h"
 //#include "Anim.h"
 //#include "StateManager.h"
 #include "GPGSManager.h"
@@ -34,7 +35,9 @@ USING_NS_CC;
 Scene* Scene1::createScene()
 {
     // 'scene' is an autorelease object
-    auto scene = Scene::create();
+    auto scene = Scene::createWithPhysics();
+    
+    scene->getPhysics3DWorld()->setGravity(Vec3(0,-10,0));
     
     // 'layer' is an autorelease object
     auto layer = Scene1::create();
@@ -105,9 +108,12 @@ bool Scene1::init()
                   Director::getInstance()->getVisibleSize().height ));
 	//world->addChild(labelTouchInfo);
 
+
+  auto _player = new Anim(visibleSize);
+
   // add a "close" icon to exit the progress. it's an autorelease object
 	auto closeItem = MenuItemImage::create("HelloWorld.png", "CloseSelected.png",
-		CC_CALLBACK_1(Scene1::menuCloseCallback, this));
+		CC_CALLBACK_1(Scene1::menuCloseCallback, this, _player));
   closeItem->setScale(0.5f);
 	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2,
 		origin.y + visibleSize.height - closeItem->getContentSize().height / 2));
@@ -123,60 +129,76 @@ bool Scene1::init()
   /*auto _player = Sprite::create("mysprite.png");
 	_player->setPosition(Vec2(winSize.width * 0.15, winSize.height * 0.5));
 	this->addChild(_player, 2);*/
-
-  /*auto ball = Sprite3D::create("ball.c3b");
+ 
+  Physics3DRigidBodyDes rbDes;
+  auto ball = Sprite3D::create("ball.c3b");
+  rbDes.mass = 4.0f;
+  rbDes.shape = Physics3DShape::createSphere((float)(ball->getContentSize().width/2)); //radius
+  auto ballBody = Physics3DRigidBody::create(&rbDes);
+  auto ballComponent = Physics3DComponent::create(ballBody);
+  ball->setScale(5);
+  ball->addComponent(ballComponent);
+  ballComponent->syncPhysicsToNode();
+  ball->setTexture("skybox/112.jpg");
   ball->setGlobalZOrder(-10);
-  ball->setScale(15);
-  ball->setPosition(Vec2(visibleSize.width/2, visibleSize.height/5));
+  ballComponent->syncNodeToPhysics();
+  ball->setPosition(Vec2(visibleSize.width/2, visibleSize.height));
+  //ballComponent->syncNodeToPhysics();
+  //ball->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::PHYSICS_TO_NODE);
   ball->setCameraMask((unsigned short)CameraFlag::USER1);
-  world->addChild(ball, 2);*/
+  world->addChild(ball, 2);
 
-  //creating animation to display in the billboard object (always facing the camera)
-  const auto factory = dragonBones::CCFactory::getFactory();
-  factory->loadDragonBonesData("mecha_1502b/mecha_1502b_ske.json");
-  factory->loadTextureAtlasData("mecha_1502b/mecha_1502b_tex.json");
-  factory->loadDragonBonesData("skin_1502b/skin_1502b_ske.json");
-  factory->loadTextureAtlasData("skin_1502b/skin_1502b_tex.json");
-  factory->loadDragonBonesData("weapon_1000/weapon_1000_ske.json");
-  factory->loadTextureAtlasData("weapon_1000/weapon_1000_tex.json");
-  auto _player = new Anim(visibleSize);
   _player->_getArmatureDisplay()->setCameraMask((unsigned short)CameraFlag::USER1);
   
-  //adding series of sprites in one armature to the billboard object
+  //adding series of sprites from one armature into the billboard object
+  //Physics3DRigidBodyDes rbDesBill;
   auto billboard = BillBoard::create(BillBoard::Mode::VIEW_PLANE_ORIENTED);
+
   billboard->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/3));
   billboard->setCameraMask((unsigned short)CameraFlag::USER1);
   billboard->addChild(_player->_getArmatureDisplay());
   world->addChild(billboard);
   
   //adding 3d map
-  cube3D = Sprite3D::create("2.obj");
-  cube3D->setScale(44);
+  Physics3DRigidBodyDes rbDesMap;
+  std::vector<Vec3> trianglesList = Bundle3D::getTrianglesList("2.obj");
+  float scale = (4.f);  //3,66*12=44
+  for (auto& it : trianglesList) {
+    it *= scale;
+  }
+  rbDesMap.shape = Physics3DShape::createMesh(&trianglesList[0], (int)trianglesList.size() / 3);
+  auto cube3D = Sprite3D::create("2.obj");
+  //auto mapBody = static_cast<Physics3DRigidBody*>(cube3D->getPhysicsObj());
+  auto mapBody = Physics3DRigidBody::create(&rbDesMap);
+  //mapBody->setRestitution(1.0f);
+  mapBody->setKinematic(true);
+  auto mapComponent = Physics3DComponent::create(mapBody);//, Vec3(0,0,0), Quaternion(0,0,0,1));
+  //auto cubeMat = Material::createWithFilename("2.material");
+  //cube3D->setMaterial(cubeMat);
+  cube3D->setScale(40);
+  cube3D->addComponent(mapComponent);
+  mapComponent->syncPhysicsToNode();
   cube3D->setRotation3D(Vec3(0,90,0));
-  int n = -60;
+  int n = -61; //-61 scale=44
   cube3D->setPosition(Vec2(60, n));
+  mapComponent->syncNodeToPhysics();
+  //mapComponent->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::NONE);
   cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
-  
+    
   //creating rotation point
   auto rotationPoint =  Node::create();
-  
   //adding 3d map as a child to the rotation point
   rotationPoint->addChild(cube3D);
-   
   _player->_getArmatureDisplay()->addChild(rotationPoint);
   rotationPoint->setPosition(Vec2(_player->_getArmatureDisplay()->getPosition().x, _player->_getArmatureDisplay()->getPosition().y));
   
-
   //creating skybox
-  //auto box = Skybox::create();
   auto box = Sprite3D::create("skybox/skybox.obj");
-  //box->setCullFace(RenderState::CULL_FACE_SIDE_FRONT);
-  //box->setCullFaceEnabled(false);
   box->setScale(520);
   box->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/2));
   //creating skybox texture
+  //auto box = Skybox::create();
   //auto textureCube = TextureCube::create("skybox/right.jpg",  "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg");
-  
   // set cube map texture parameters
   //Texture2D::TexParams tRepeatParams;
   //tRepeatParams.magFilter = GL_NEAREST;
@@ -233,8 +255,6 @@ bool Scene1::init()
   
   hudlayer->addChild(_aim, 3);
   
-  //cube3D->setCameraMask((unsigned short)CameraFlag::USER2);
-
   //adding light to scene
   //auto light = DirectionLight::create(Vec3(-1.0f, -1.0f, 0.0f), Color3B::RED);
   //addChild(light);
@@ -271,19 +291,21 @@ bool Scene1::init()
 	return true;
 }
 
-bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint) {
+bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint) {
 
-  auto bounds = unused_event->getCurrentTarget()->getBoundingBox();
+  auto bounds = event->getCurrentTarget()->getBoundingBox();
   
   auto location = touch->getLocation();
 
   // get the location of the touch relative to your button
   auto nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
+  
+  int speed = 2;
 
-  auto moveR = RepeatForever::create(MoveBy::create(0, Vec2(-1,0)));
-  auto moveL = RepeatForever::create(MoveBy::create(0, Vec2(1,0)));
-  auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,1)));
-  auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-1)));
+  auto moveR = RepeatForever::create(MoveBy::create(0, Vec2(-speed,0)));
+  auto moveL = RepeatForever::create(MoveBy::create(0, Vec2(speed,0)));
+  auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,speed)));
+  auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-speed)));
   
   auto rotL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
   auto rotSkyL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
@@ -292,7 +314,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
 
   if (bounds.containsPoint(location)) {
     //checking whether the circle is located to the left of the screen (that means it's a joystick)
-    if ((unused_event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
+    if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->move(1);
   
       //debug info about touch coordinates inside the sprite
@@ -339,16 +361,17 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
         // center of the joystick
         move_state = 0;
       }
+      //_map->syncPhysicsToNode();
     }
     //checking whether the circle is located on the right side of the screen (that means it's an aim circle)
-    else if ((unused_event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
+    else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       //_player->attack(true);
       
       //_map->setAnchorPoint(Vec2((_player->_getArmatureDisplay()->getPositionX()/_map->getPositionX())*0.5f, (_player->_getArmatureDisplay()->getPositionY()/_map->getPositionY())*0.5f));//Vec2(AnchX, AnchY));
      
       rotationPoint->runAction(rotL);
       _box->runAction(rotSkyL);
-
+      //_map->syncPhysicsToNode();
       //_camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
       //auto visibleSize = Director::getInstance()->getVisibleSize();
       //Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -371,7 +394,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* unused_event, Anim* _player, Spri
   addChild(projectile);
   std::stringstream ss;
   // 1  - Just an example for how to get the  _player object
-  auto _player = unused_event->getCurrentTarget();
+  auto _player = event->getCurrentTarget();
  
   // 2
   Vec2 touchLocation = touch->getLocation();
@@ -430,15 +453,21 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       
       //stops repeated movement from onTouchBegin
       _map->stopAllActions();
+      //_map->syncPhysicsToNode();
       _box->stopAllActions();
 
-      Rect _playerRect = billboard->getBoundingBox();
-      AABB _mapRect = cube3D->getAABB();
+      /*Rect _playerRect = billboard->getBoundingBox();
+
+      AABB _playerAABB = AABB(Vec3(_playerRect.getMinX(), _playerRect.getMinY(), billboard->getPositionZ()),
+                              Vec3(_playerRect.getMaxX(), _playerRect.getMaxY(), billboard->getPositionZ()));
+      AABB _mapAABB = cube3D->getAABB();*/
   
-      if (_mapRect.containPoint(Vec3(_playerRect.getMinX(), _playerRect.getMinY(), billboard->getPositionZ()))) {
+      /*if (_playerAABB.intersects(_mapAABB)) {
         
         _map->runAction(MoveBy::create(1, Vec2(0,-90)));
-      }
+      }*/
+
+     // if (_playerRect.getMinX()<cube3D->getMeshIndexData(0)->getMeshVertexData())
 
     }
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
@@ -448,6 +477,7 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       rotationPoint->stopAllActions();
       //stops repeated movement from onTouchBegin
       _map->stopAllActions();
+      //_map->syncPhysicsToNode();
       _box->stopAllActions();
     }
   }
@@ -459,10 +489,12 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
   
   auto location = touch->getLocation();
 
-  auto moveR = RepeatForever::create(MoveBy::create(0, Vec2(-1,0)));
-  auto moveL = RepeatForever::create(MoveBy::create(0, Vec2(1,0)));
-  auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,1)));
-  auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-1)));
+  int speed = 2;
+
+  auto moveR = RepeatForever::create(MoveBy::create(0, Vec2(-speed,0)));
+  auto moveL = RepeatForever::create(MoveBy::create(0, Vec2(speed,0)));
+  auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,speed)));
+  auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-speed)));
     
   //std::stringstream ss;
 
@@ -551,31 +583,33 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
         // center of the joystick
         move_state = 0;
       }
+      //_map->syncPhysicsToNode();
     }
     // changes applied to the right circle
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
       _player->attack(false);
-
+      //_map->syncPhysicsToNode();
     }
   }
 }
 
-void Scene1::messageReceived(Event* unused_event)
+void Scene1::messageReceived(Event* event)
 {	
   /*projectile2 = cocos2d::Sprite::create("projectile.png");
   addChild(projectile2);
-  auto _player = unused_event->getCurrentTarget();
+  auto _player = event->getCurrentTarget();
   projectile2->setPosition(_player->getPosition());
   auto actionMove1 = MoveTo::create(2.0f, g_engine.gotDest);
   auto actionRemove1 = RemoveSelf::create();
   projectile2->runAction(Sequence::create(actionMove1,actionRemove1, nullptr));*/
 }
 
-void Scene1::menuCloseCallback(Ref* pSender)
+void Scene1::menuCloseCallback(Ref* pSender, Anim* _player)
 {
 	//show fullscreen interstitial
 //	AdmobHelper::showfullscreenAd();
     AdmobHelper::hideAd();
+    _player->~Anim();
     auto scene = Scene0::createScene();
     Director::getInstance()->replaceScene(scene);
     g_engine.LeaveGame();

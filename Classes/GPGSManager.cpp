@@ -288,7 +288,7 @@ void GPGSManager::InitServices(gpg::PlatformConfiguration &pc)
         .Create(pc);
     }
     LOGI("InitServices Created");
-    InitGoogleNearbyConnection(pc);
+    //InitGoogleNearbyConnection(pc);
 }
 
 /*
@@ -296,7 +296,7 @@ void GPGSManager::InitServices(gpg::PlatformConfiguration &pc)
  *    Create an NearbyConnection interface, update our internal indicators
  *    according to connection creation result
  */
-void GPGSManager::InitGoogleNearbyConnection(gpg::PlatformConfiguration &pc) {
+/*void GPGSManager::InitGoogleNearbyConnection(gpg::PlatformConfiguration &pc) {
   // Need only one connection
   if (nearby_connection_ != nullptr) {
     return;
@@ -340,7 +340,7 @@ void GPGSManager::InitGoogleNearbyConnection(gpg::PlatformConfiguration &pc) {
             /*
              * interface need update, we should prompt user to do so, or we do
              * it automatically here [not done]
-             */
+             * /
             LOGI(
                 "InitializationFinished(): ERROR_VERSION_UPDATE_REQUIRED "
                 "returned,"
@@ -350,7 +350,7 @@ void GPGSManager::InitGoogleNearbyConnection(gpg::PlatformConfiguration &pc) {
           case gpg::InitializationStatus::ERROR_INTERNAL:
             /*
              * Error happened, interface is not ready to use
-             */
+             * /
             LOGI(
                 "InitializationFinished() failed, unable to start nearby connection");
             nbc_state_ = nearby_connection_state::FAILED;
@@ -371,7 +371,7 @@ void GPGSManager::InitGoogleNearbyConnection(gpg::PlatformConfiguration &pc) {
   // telling us that VALID initialization has been completed
   LOGI("InitGoogleNearbyConnection() created interface: %p",
        nearby_connection_.get());
-}
+}*/
 
 void GPGSManager::LeaveGame() {
   gameServices->RealTimeMultiplayer().LeaveRoom(room_, [](gpg::ResponseStatus const &response) {

@@ -21,6 +21,7 @@ class Anim
     float _aimRadian;
     float _speedX;
     float _speedY;
+    dragonBones::CCFactory* factory;
     dragonBones::CCArmatureDisplay* _armatureDisplay;
     dragonBones::Armature* _weaponR;
     dragonBones::Armature* _weaponL;

@@ -3,25 +3,26 @@
 
 #include "cocos2d.h"
 #include "Anim.h"
+#include "physics3d/CCPhysics3D.h"
 
 class Scene1 : public cocos2d::Layer
 {
 public:
-    cocos2d::Sprite3D *cube3D;
+    //cocos2d::Sprite3D *cube3D;
     
     cocos2d::RenderTexture *renderTexDefault;
     cocos2d::RenderTexture *renderTexWithBuffer;
-
+    
 	static cocos2d::Scene* createScene();
 
 	virtual bool init();
 
 	// a selector callback
-	void menuCloseCallback(cocos2d::Ref* pSender);
-    void messageReceived(cocos2d::Event* unused_event);
+	void menuCloseCallback(cocos2d::Ref* pSender, Anim* _player);
+    void messageReceived(cocos2d::Event* event);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Scene1);
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* unused_event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
     void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, BillBoard* billboard, Node* rotationPoint);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
 	//void onTouchCancelled();
