@@ -112,7 +112,7 @@ bool Scene1::init()
 
   // add a "close" icon to exit the progress. it's an autorelease object
 	auto closeItem = MenuItemImage::create("HelloWorld.png", "CloseSelected.png",
-		CC_CALLBACK_1(Scene1::menuCloseCallback, this, _player));
+		CC_CALLBACK_1(Scene1::menuCloseCallback, this, _player, world, hudlayer));
   closeItem->setScale(0.5f);
 	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2,
 		origin.y + visibleSize.height - closeItem->getContentSize().height / 2));
@@ -157,9 +157,9 @@ bool Scene1::init()
   billboard->setCameraMask((unsigned short)CameraFlag::USER1);
   billboard->addChild(_player->_getArmatureDisplay());
   //rbDesBill.mass = 0.0f;
-  rbDesBill.shape = Physics3DShape::createBox(Vec3((_player->_getArmatureDisplay()->getBoundingBox().getMaxX()), (_player->_getArmatureDisplay()->getBoundingBox().getMaxY()), 1));
-  LOGI("!!!!!!!!!!!!!!!!!!!!!!!maxX:%f minX:%f maxY:%f minY:%f sizeX:%f sizeY:%f", _player->_getArmatureDisplay()->getBoundingBox().getMaxX(), _player->_getArmatureDisplay()->getBoundingBox().getMinX(), _player->_getArmatureDisplay()->getBoundingBox().getMaxY(), _player->_getArmatureDisplay()->getBoundingBox().getMinY(), _player->_getArmatureDisplay()->getBoundingBox().size.width, _player->_getArmatureDisplay()->getBoundingBox().size.height);
-  rbDesBill.isTrigger = true;
+  rbDesBill.shape = Physics3DShape::createSphere(2.f);
+  //LOGI("!!!!!!!!!!!!!!!!!!!!!!!maxX:%f minX:%f maxY:%f minY:%f sizeX:%f sizeY:%f", _player->_getArmatureDisplay()->getBoundingBox().getMaxX(), _player->_getArmatureDisplay()->getBoundingBox().getMinX(), _player->_getArmatureDisplay()->getBoundingBox().getMaxY(), _player->_getArmatureDisplay()->getBoundingBox().getMinY(), _player->_getArmatureDisplay()->getBoundingBox().size.width, _player->_getArmatureDisplay()->getBoundingBox().size.height);
+  //rbDesBill.isTrigger = true;
   auto billBody = Physics3DCollider::create(&rbDesBill);
   //auto billBody = Physics3DRigidBody::create(&rbDesBill);
   //billBody->setKinematic(true);
@@ -182,6 +182,7 @@ bool Scene1::init()
   rbDesMap.shape = Physics3DShape::createMesh(&trianglesList[0], (int)trianglesList.size() / 3);
   auto cube3D = Sprite3D::create("2.obj");
   auto mapBody = Physics3DRigidBody::create(&rbDesMap);
+  //mapBody->setGravity(1);
   //auto mapBody = Physics3DCollider::create(&rbDesMap);
   //rbDesMap.isTrigger = true;
   //mapBody->setRestitution(1.0f);
@@ -193,27 +194,48 @@ bool Scene1::init()
   cube3D->addComponent(mapComponent);
   mapComponent->syncPhysicsToNode();
   cube3D->setRotation3D(Vec3(0,90,0));
-  int n = -202; //-61 scale=44
+  int n = -63; //-61 scale=44
   cube3D->setPosition(Vec2(30, n));
   mapComponent->syncNodeToPhysics();
   //mapComponent->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::NONE);
   cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
   
+  // creating collisions
   billBody->setCollisionCallback([=](const Physics3DCollisionInfo &ci){
     //if (!ci.collisionPointList.empty()) {
-      /*if (ci.objA->getMask() != 0) {
-        //CCLOG("Collision Point Num: %d", ci.collisionPointList.size());
-        cube3D->stopAllActions(); //runAction(RepeatForever::create(MoveBy::create(0, Vec2(-1,0))));
-        _player->_getArmatureDisplay()->stopAllActions();
-        ci.objA->setMask(0);
-      }*/
-      //if (ci.objA->getMask() != 0) {
       if (ci.objB == mapBody) {
-      //cube3D->setPosition3D(Vec3(cube3D->getPositionX()-1, cube3D->getPositionY(), cube3D->getPositionZ()));
-      cube3D->setPosition3D(ci.collisionPointList[0].worldPositionOnB);
-      //ci.objB->setCollisionCallback(nullptr);
-      //ci.objA->setCollisionCallback(nullptr);
-      //ci.objA->setMask(0);
+        //LOGI("!!!!!!!!!!!!!!!!!!!!!!!Collision Point Pos: %f, %f, %f", ci.collisionPointList.back().localPositionOnA.x, ci.collisionPointList.back().localPositionOnA.y, ci.collisionPointList.back().localPositionOnA.z );
+        //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB move_state
+        //changing map position depending on move_state
+        switch (move_state) {
+        case 14:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,2));
+          break;
+        case 13:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,-2));
+          break;
+        case 24:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,2));
+          break;
+        case 23:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,-2));
+          break;
+        case 1:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,0));
+          break;
+        case 2:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,0));
+          break;
+        case 3:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,-2));
+          break;
+        case 4:
+          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,2));
+          break;
+        case 0:
+          break;
+        }
+        //cube3D->setPosition3D(ci.collisionPointList.back().worldPositionOnB - Vec3(110,210,0));
       }
     //}
   });
@@ -647,16 +669,18 @@ void Scene1::messageReceived(Event* event)
   projectile2->runAction(Sequence::create(actionMove1,actionRemove1, nullptr));*/
 }
 
-void Scene1::menuCloseCallback(Ref* pSender, Anim* _player)
+void Scene1::menuCloseCallback(Ref* pSender, Anim* _player, Layer* world, Layer* hudlayer)
 {
 	//show fullscreen interstitial
 //	AdmobHelper::showfullscreenAd();
     AdmobHelper::hideAd();
     _player->~Anim();
+    g_engine.LeaveGame();
+    //world->removeAllChildren();
+    //hudlayer->removeAllChildren();
+    //this->removeAllChildren();
     auto scene = Scene0::createScene();
     Director::getInstance()->replaceScene(scene);
-    g_engine.LeaveGame();
-  
   /*  Director::getInstance()->end();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)

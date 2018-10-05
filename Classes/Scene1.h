@@ -18,7 +18,7 @@ public:
 	virtual bool init();
 
 	// a selector callback
-	void menuCloseCallback(cocos2d::Ref* pSender, Anim* _player);
+	void menuCloseCallback(cocos2d::Ref* pSender, Anim* _player, Layer* world, Layer* hudlayer);
     void messageReceived(cocos2d::Event* event);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Scene1);
