@@ -22,23 +22,37 @@ public:
     void messageReceived(cocos2d::Event* event);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Scene1);
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
-    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
-    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Sprite3D* _map, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
 	//void onTouchCancelled();
 	//cocos2d::Sprite* projectile;
     //cocos2d::Sprite* projectile2;
 	void convertToUint8 (float f, std::vector<unsigned char>& v);
 	void basicShader(cocos2d::Sprite3D * sprite3d);
 	void aim();
-    
+	void IncAngle(float dt);
+	void DecAngle(float dt);
+
     //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
 	int move_state;
+	void Move(float dt);
 private:
+	//location of touch
+	Vec2 location;
+	//level map
+	Sprite3D* cube3D;
+	//player's rotation point, to always rotate map around where player's location is
+	Node* rotationPoint;
 	//joystick coordinates for further modification
 	Vec3 coord; 
 	//map rotation angle
-	Vec3 angle;
+	float angle;
+	//directional buttons' coordinates
+	Vec2 Up;
+	Vec2 Left;
+    Vec2 Right;
+    Vec2 Down;
 	Sprite* _joystick;
 	Sprite* _aim;
 	Layer* world;
