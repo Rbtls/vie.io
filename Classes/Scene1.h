@@ -22,9 +22,9 @@ public:
     void messageReceived(cocos2d::Event* event);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Scene1);
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
-    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
-    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint);
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard);
+    void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard);
+    void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard);
 	//void onTouchCancelled();
 	//cocos2d::Sprite* projectile;
     //cocos2d::Sprite* projectile2;
@@ -37,9 +37,15 @@ public:
     //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
 	int move_state;
 	void Move(float dt);
+
+	Vec3 convertToWorldSpace3D(Node* container, Vec3 position);
+	Vec3 convertToNodeSpace3D(Node* container, Vec3 position);
+	Mat4 getNodeToWorldSpaceMatrix(Node* node);
 private:
-	//location of touch
+	//location of touch relative to screen
 	Vec2 location;
+	//location of touch relative to sprite
+	Vec2 nodeSpaceLocation;
 	//level map
 	Sprite3D* cube3D;
 	//player's rotation point, to always rotate map around where player's location is
@@ -53,6 +59,10 @@ private:
 	Vec2 Left;
     Vec2 Right;
     Vec2 Down;
+    
+    //skybox
+    Sprite3D* box;
+
 	Sprite* _joystick;
 	Sprite* _aim;
 	Layer* world;

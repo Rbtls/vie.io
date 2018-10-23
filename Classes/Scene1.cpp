@@ -213,6 +213,13 @@ bool Scene1::init() {
   //mapComponent->setSyncFlag(Physics3DComponent::PhysicsSyncFlag::NONE);
   cube3D->setCameraMask((unsigned short)CameraFlag::USER1);
   
+  //creating rotation point
+  rotationPoint =  Node::create();
+  //adding 3d map as a child to the rotation point
+  rotationPoint->addChild(cube3D);
+  _player->_getArmatureDisplay()->addChild(rotationPoint);
+  rotationPoint->setPosition3D(Vec3(_player->_getArmatureDisplay()->getPosition3D().x, _player->_getArmatureDisplay()->getPosition3D().y, _player->_getArmatureDisplay()->getPosition3D().z));
+
   // creating collisions
   billBody->setCollisionCallback([=](const Physics3DCollisionInfo &ci) {
     //if (!ci.collisionPointList.empty()) {
@@ -222,28 +229,28 @@ bool Scene1::init() {
         //changing map position depending on move_state
         switch (move_state) {
         case 14:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,2)));
           break;
         case 13:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,-2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,2)));
           break;
         case 24:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,-2)));
           break;
         case 23:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,-2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,-2)));
           break;
         case 1:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(-2,0,0));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,2)));
           break;
         case 2:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(2,0,0));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,-2)));
           break;
         case 3:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,-2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,0)));
           break;
         case 4:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,2));
+          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,0)));
           break;
         case 0:
           break;
@@ -253,15 +260,8 @@ bool Scene1::init() {
     //}
   });
 
-  //creating rotation point
-  rotationPoint =  Node::create();
-  //adding 3d map as a child to the rotation point
-  rotationPoint->addChild(cube3D);
-  _player->_getArmatureDisplay()->addChild(rotationPoint);
-  rotationPoint->setPosition(Vec2(_player->_getArmatureDisplay()->getPosition().x, _player->_getArmatureDisplay()->getPosition().y));
-  
   //creating skybox
-  auto box = Sprite3D::create("skybox/skybox.obj");
+  box = Sprite3D::create("skybox/skybox.obj");
   box->setScale(520);
   box->setPosition(cocos2d::Vec2(visibleSize.width/2, visibleSize.height/2));
   box->setLightMask(0);
@@ -309,13 +309,18 @@ bool Scene1::init() {
   Down.x = coord.x;
   Left.y = coord.y;
   Right.y = coord.y;
+
+  /*auto _center = Sprite::create("touch.png");
+  _center->setScale(0.15f);
+  _center->setPosition(Vec2((coord.x -(0.3*(coord.x - Left.x))) , (coord.y +(0.3*(Up.y - coord.y)))));
+  hudlayer->addChild(_center);*/
   //LOGI("!!!!!!!!!!!!!!!!!!!!!!!coord.x = %f, coord.y = %f, Up.y = %f, Down.y = %f, Left.x = %f, Right.x = %f", coord.x, coord.y, Up.y, Down.y, Left.x, Right.x);
 
   //creating listener for joystick
   auto listener_joystick = EventListenerTouchOneByOne::create();
-  listener_joystick->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _joystick, _camera, box, billboard, rotationPoint);
-  listener_joystick->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _joystick, _camera, box, billboard, rotationPoint);
-  listener_joystick->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _joystick, _camera, box, billboard, rotationPoint);
+  listener_joystick->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _joystick, _camera, billboard);
+  listener_joystick->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _joystick, _camera, billboard);
+  listener_joystick->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _joystick, _camera, billboard);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_joystick, _joystick);
   
   hudlayer->addChild(_joystick, 3);
@@ -328,9 +333,9 @@ bool Scene1::init() {
  
   //creating listener for aim
   auto listener_aim = EventListenerTouchOneByOne::create();
-  listener_aim->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _aim, _camera, box, billboard, rotationPoint);
-  listener_aim->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _aim, _camera, box, billboard, rotationPoint);
-  listener_aim->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _aim, _camera, box, billboard, rotationPoint);
+  listener_aim->onTouchBegan = CC_CALLBACK_2(Scene1::onTouchBegan, this, _player, _aim, _camera, billboard);
+  listener_aim->onTouchMoved = CC_CALLBACK_2(Scene1::onTouchMoved, this, _player, _aim, _camera, billboard);
+  listener_aim->onTouchEnded = CC_CALLBACK_2(Scene1::onTouchEnded, this, _player, _aim, _camera, billboard);
   this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener_aim, _aim);
   
   hudlayer->addChild(_aim, 3);
@@ -383,25 +388,21 @@ bool Scene1::init() {
 	return true;
 }
 
-bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint) {
+bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard) {
   
   auto bounds = event->getCurrentTarget()->getBoundingBox();
   
   location = touch->getLocation();
   
   // get the location of the touch relative to your button
-  auto nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
-
-  // TODO: add rotSky to IncAngle/DecAngle
-  auto rotSkyL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
-  auto rotSkyR = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0))->reverse());
+  nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
 
   if (bounds.containsPoint(location)) {
     //checking whether the circle is located to the left of the screen (that means it's a joystick)
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
            
       star->setVisible(true);
-      star->setPosition(nodeSpaceLocation);
+      //star->setPosition(nodeSpaceLocation);
 
       _player->move(1);
       
@@ -415,17 +416,11 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
       aim_star->setPosition(nodeSpaceLocation);
       // left side of the aim circle
       if ((nodeSpaceLocation.x <= event->getCurrentTarget()->getPositionX())) {
-        //rotationPoint->stopAction(rotR);
-        _box->stopAction(rotSkyR);
-       
-        //rotationPoint->runAction(rotL);
-        _box->runAction(rotSkyL);
+
         //_joystick->runAction(rotAngL)
 
         //_joystick->schedule((Scene1::IncAngle()), 0.f, 0, 0.0f, "schedulerKey"); 
         
-
-
         Director::getInstance()->getScheduler()->schedule(
           CC_SCHEDULE_SELECTOR(Scene1::IncAngle), this, 0.0f, false);
 
@@ -435,13 +430,12 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
           CC_SCHEDULE_SELECTOR(Scene1::ChangeCoord), this, 0.0f, false);*/
         //_joystick->schedule((Scene1::ChangeCoord(event)), 0.f, 0, 0.0f, "schedulerKey");
       } 
+      //right side of the aim circle
       else if ((nodeSpaceLocation.x > event->getCurrentTarget()->getPositionX())) {
         //LOGI("!!!!!!!!!!!!!!!!!!!!!!!getPositionX = %f, bounds = %f, nodeSpaceLocation.x = %f", event->getCurrentTarget()->getPositionX(), bounds.size.width, nodeSpaceLocation.x);
-        //rotationPoint->stopAction(rotL);
-        _box->stopAction(rotSkyL);
-       
-        //rotationPoint->runAction(rotR);
-        _box->runAction(rotSkyR);
+    
+        Director::getInstance()->getScheduler()->schedule(
+          CC_SCHEDULE_SELECTOR(Scene1::DecAngle), this, 0.0f, false);
       }
       //cube3D->syncPhysicsToNode();
       //_camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
@@ -515,7 +509,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
   return true;
 }
 
-void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint)
+void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard)
 {
   
   auto bounds = event->getCurrentTarget()->getBoundingBox();
@@ -529,7 +523,6 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       //stops repeated movement from onTouchBegin
       cube3D->stopAllActions();
       //cube3D->syncPhysicsToNode();
-      _box->stopAllActions();
       _joystick->stopAllActions();
 
       Director::getInstance()->getScheduler()->unschedule(
@@ -564,41 +557,28 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       rotationPoint->stopAllActions();
       //stops repeated movement from onTouchBegin
       cube3D->stopAllActions();
-      //cube3D->syncPhysicsToNode();
-      _box->stopAllActions();
       _joystick->stopAllActions();
-      //LOGI("!!!!!!!!!!!!!!!!!!!!!!!angle = %f, angle = %f, angle.z = %f", angle, angle, angle.z);
     }
   }
 }
 
-void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, Sprite3D* _box, BillBoard* billboard, Node* rotationPoint)
+void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _player, Sprite* _node, Camera* _camera, BillBoard* billboard)
 {
   auto bounds = event->getCurrentTarget()->getBoundingBox();
   
   location = touch->getLocation();
 
   // get the location of the touch relative to your button
-  auto nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
+  nodeSpaceLocation = _node->getParent()->convertToNodeSpace(location);
 
   int speed = 2;
-
-  /*auto moveR = RepeatForever::create(MoveBy::create(0, Vec2(-speed,0)));
-  auto moveL = RepeatForever::create(MoveBy::create(0, Vec2(speed,0)));
-  auto moveF = RepeatForever::create(MoveBy::create(0, Vec3(0,0,speed)));
-  auto moveB = RepeatForever::create(MoveBy::create(0, Vec3(0,0,-speed)));*/
-
-  //auto rotL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
-  auto rotSkyL = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0)));
-  //auto rotR = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0))->reverse());
-  auto rotSkyR = RepeatForever::create(RotateBy::create(0, Vec3(0,1,0))->reverse());  
 
   //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
   if (bounds.containsPoint(touch->getLocation())) {
     //changes applied to the left circle
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
       
-      star->setPosition(nodeSpaceLocation);      
+      //star->setPosition(nodeSpaceLocation);      
       //reduces movement velocity to initial value
       /*switch (move_state) {
         case 14:
@@ -641,22 +621,18 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       aim_star->setVisible(true);
       aim_star->setPosition(nodeSpaceLocation);
       _player->attack(false);
-    
+      
+      //left side of the aim circle
       if ((nodeSpaceLocation.x <= event->getCurrentTarget()->getPositionX())) {
-        _box->stopAction(rotSkyR);
-        //rotationPoint->stopAction(rotR);
-        
-        //rotationPoint->runAction(rotL);
-        _box->runAction(rotSkyL);
+        Director::getInstance()->getScheduler()->schedule(
+          CC_SCHEDULE_SELECTOR(Scene1::IncAngle), this, 0.0f, false);
       } 
+      //right side of the aim circle
       else if ((nodeSpaceLocation.x > event->getCurrentTarget()->getPositionX())) {
         //LOGI("!!!!!!!!!!!!!!!!!!!!!!!getPositionX = %f, bounds = %f, nodeSpaceLocation.x = %f", event->getCurrentTarget()->getPositionX(), bounds.size.width, nodeSpaceLocation.x);
         star->setVisible(false);
-        _box->stopAction(rotSkyL);
-        //rotationPoint->stopAction(rotL);
-       
-        //rotationPoint->runAction(rotR);
-        _box->runAction(rotSkyR);
+        Director::getInstance()->getScheduler()->schedule(
+          CC_SCHEDULE_SELECTOR(Scene1::DecAngle), this, 0.0f, false);
       }
     }
   }
@@ -760,43 +736,25 @@ void Scene1::aim()
 
 void Scene1::IncAngle(float dt) {
   if (angle < 360) {
-    angle += 0.01f;
+    angle += 1.4f;
   }
   else {
-    angle = 0.01f;
+    angle = 1.4f;
   }
-  rotationPoint->setRotation3D(rotationPoint->getRotation3D() + Vec3(0,angle,0));
-  auto _Up = Up;
-  auto _Down = Down;
-  auto _Left = Left;
-  auto _Right = Right;
-  
-  _Up.x = (Up.x*cos(angle*M_PI/180) - Up.y*sin(angle*M_PI/180));
-  _Down.x = (Down.x*cos(angle*M_PI/180) - Down.y*sin(angle*M_PI/180));
-  _Left.x = (Left.x*cos(angle*M_PI/180) - Left.y*sin(angle*M_PI/180));
-  _Right.x = (Right.x*cos(angle*M_PI/180) - Right.y*sin(angle*M_PI/180));
-  
-  _Up.y = (Up.x*sin(angle*M_PI/180) + Up.y*cos(angle*M_PI/180));
-  _Down.y = (Down.x*sin(angle*M_PI/180) + Down.y*cos(angle*M_PI/180));
-  _Left.y = (Left.x*sin(angle*M_PI/180) + Left.y*cos(angle*M_PI/180));
-  _Right.y = (Right.x*sin(angle*M_PI/180) + Right.y*cos(angle*M_PI/180));
-  
-  Up = _Up;
-  Down = _Down;
-  Left = _Left;
-  Right = _Right;
-  //LOGI("!!!!!!!!!!!!!!!!!!!!!!!angle = %d", angle);
+  rotationPoint->setRotation3D(rotationPoint->getRotation3D() + Vec3(0,(angle/100),0));
+  box->setRotation3D(box->getRotation3D() + Vec3(0,(angle/100),0));
 }
 
 void Scene1::DecAngle(float dt) {
   if (angle > 0) {
-      angle -= 0.01f;
+      angle -= 1.4f;
   }
   else {
-    angle = 359.99f;
+    angle = 358.6f;
   }
-  rotationPoint->setRotation3D(rotationPoint->getRotation3D() - Vec3(0,angle,0));
-  auto _Up = Up;
+  rotationPoint->setRotation3D(rotationPoint->getRotation3D() - Vec3(0,(angle/100),0));
+  box->setRotation3D(box->getRotation3D() - Vec3(0,(angle/100),0));
+  /*auto _Up = Up;
   auto _Down = Down;
   auto _Left = Left;
   auto _Right = Right;
@@ -814,52 +772,82 @@ void Scene1::DecAngle(float dt) {
   Up = _Up;
   Down = _Down;
   Left = _Left;
-  Right = _Right;
+  Right = _Right;*/
 }
 
 void Scene1::Move(float dt) {
   int speed = 2;
-  auto nodeSpaceLocation = _joystick->convertToNodeSpace(location);
+  star->setPosition(nodeSpaceLocation); 
   //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
-  if ((nodeSpaceLocation.x < (coord.x -(0.5*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y -(0.5*(coord.y - Down.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
-    move_state = 14;
-  }
-  else if ((nodeSpaceLocation.x < (coord.x -(0.5*(coord.x - Left.x)))) && (nodeSpaceLocation.y > (coord.y +(0.5*(Up.y - coord.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
-    move_state = 13;
-  }
-  else if ((nodeSpaceLocation.x > (coord.x +(0.5*(Right.x - coord.x)))) && (nodeSpaceLocation.y < (coord.y -(0.5*(coord.y - Down.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
+  if ((nodeSpaceLocation.x < (coord.x -(0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y -(0.3*(coord.y - Down.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3((speed),0,0)));
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3(0,0,(speed))));
     move_state = 24;
   }
-  else if ((nodeSpaceLocation.x > (coord.x +(0.5*(Right.x - coord.x)))) && (nodeSpaceLocation.y > (coord.y +(0.5*(Up.y - coord.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
+  else if ((nodeSpaceLocation.x < (coord.x -(0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y > (coord.y +(0.3*(Up.y - coord.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3((speed),0,0)));
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3(0,0,(speed))));
+    move_state = 14;
+  }
+  else if ((nodeSpaceLocation.x > (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.y < (coord.y -(0.3*(coord.y - Down.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3((speed),0,0)));
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,(speed))));
     move_state = 23;
   }
-  else if ((nodeSpaceLocation.x < (coord.x -(0.5*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y +(0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(0.3*(coord.y - Down.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-    move_state = 1;
+  else if ((nodeSpaceLocation.x > (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.y > (coord.y +(0.3*(Up.y - coord.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3((speed),0,0)));
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,(speed))));
+    move_state = 13;
   }
-  else if ((nodeSpaceLocation.x > (coord.x +(0.5*(Right.x - coord.x)))) && (nodeSpaceLocation.y < (coord.y +(0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(0.3*(coord.y - Down.y))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-    move_state = 2;
-  }
-  else if ((nodeSpaceLocation.y < (coord.y -(0.5*(coord.y - Down.y)))) && (nodeSpaceLocation.x < (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(0.3*(coord.x - Left.x))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
+  else if ((nodeSpaceLocation.x < (coord.x -(0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y +(/*0.3*/0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(/*0.3*/0.3*(coord.y - Down.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3(0,0,(speed))));
     move_state = 4;
   }
-  else if ((nodeSpaceLocation.y > (coord.y +(0.5*(Up.y - coord.y)))) && (nodeSpaceLocation.x < (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(0.3*(coord.x - Left.x))))) {
-    cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
+  else if ((nodeSpaceLocation.x > (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.y < (coord.y +(/*0.3*/0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(/*0.3*/0.3*(coord.y - Down.y))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,(speed))));
     move_state = 3;
   }
-  else if ((nodeSpaceLocation.x < (coord.x +(0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y +(0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(0.3*(coord.y - Down.y))))) {
+  else if ((nodeSpaceLocation.y < (coord.y -(0.3*(coord.y - Down.y)))) && (nodeSpaceLocation.x < (coord.x +(/*0.3*/0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(/*0.3*/0.3*(coord.x - Left.x))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) - Vec3((speed),0,0)));
+    move_state = 2;
+  }
+  else if ((nodeSpaceLocation.y > (coord.y +(0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.x < (coord.x +(/*0.3*/0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(/*0.3*/0.3*(coord.x - Left.x))))) {
+    cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3((speed),0,0)));
+    move_state = 1;
+  }
+  else if ((nodeSpaceLocation.x < (coord.x +(/*0.3*/0.3*(Right.x - coord.x)))) && (nodeSpaceLocation.x > (coord.x -(/*0.3*/0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y +(/*0.3*/0.3*(Up.y - coord.y)))) && (nodeSpaceLocation.y > (coord.y -(/*0.3*/0.3*(coord.y - Down.y))))) {
     // center of the joystick
     move_state = 0;
   }
-  LOGI("!!!!!!!!!!!!!!!!!!!!!!!move_state = %d", move_state);
+  //LOGI("!!!!!!!!!!!!!!!!!!!!!!!move_state = %d", move_state);
+}
+
+Vec3 Scene1::convertToWorldSpace3D(Node* container, Vec3 position) {
+    Vec3 result = position;
+    Mat4 mat = getNodeToWorldSpaceMatrix(container);
+    mat.transformPoint(&result);
+    return result;
+  }
+  
+  Vec3 Scene1::convertToNodeSpace3D(Node* container, Vec3 position) {
+    Vec3 result = position;
+    Mat4 mat = getNodeToWorldSpaceMatrix(container);
+    mat.inverse();
+    mat.transformPoint(&result);
+    return result;
+  }
+  
+  Mat4 Scene1::getNodeToWorldSpaceMatrix(Node* node) {
+    Mat4 matrix;
+    matrix.translate(node->getPositionX(), node->getPositionY(), node->getPositionZ());
+    auto quat = node->getRotationQuat();
+    matrix.rotate(quat);
+    matrix.scale(node->getScaleX(), node->getScaleY(), node->getScaleZ());
+    
+  if(node->getParent() != nullptr){
+    Mat4 parentMatrix = Scene1::getNodeToWorldSpaceMatrix(node->getParent());
+    parentMatrix.multiply(matrix);
+    matrix = parentMatrix;
+  }
+  return matrix;
 }
