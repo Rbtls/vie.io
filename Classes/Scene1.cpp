@@ -222,42 +222,41 @@ bool Scene1::init() {
 
   // creating collisions
   billBody->setCollisionCallback([=](const Physics3DCollisionInfo &ci) {
-    //if (!ci.collisionPointList.empty()) {
-      if (ci.objB == mapBody) {
-        //LOGI("!!!!!!!!!!!!!!!!!!!!!!!Collision Point Pos: %f, %f, %f", ci.collisionPointList.back().localPositionOnA.x, ci.collisionPointList.back().localPositionOnA.y, ci.collisionPointList.back().localPositionOnA.z );
-        //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB move_state
-        //changing map position depending on move_state
-        switch (move_state) {
-        case 14:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,2)));
-          break;
-        case 13:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,2)));
-          break;
-        case 24:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,-2)));
-          break;
-        case 23:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,-2)));
-          break;
-        case 1:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,2)));
-          break;
-        case 2:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,-2)));
-          break;
-        case 3:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-2,0,0)));
-          break;
-        case 4:
-          cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(2,0,0)));
-          break;
-        case 0:
-          break;
-        }
-        //cube3D->setPosition3D(ci.collisionPointList.back().worldPositionOnB - Vec3(110,210,0));
+    int speed = 6;
+    if (ci.objB == mapBody) {
+      //LOGI("!!!!!!!!!!!!!!!!!!!!!!!Collision Point Pos: %f, %f, %f", ci.collisionPointList.back().localPositionOnA.x, ci.collisionPointList.back().localPositionOnA.y, ci.collisionPointList.back().localPositionOnA.z );
+      //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB move_state
+      //changing map position depending on move_state
+      switch (move_state) {
+      case 14:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-speed,0,speed)));
+        break;
+      case 13:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-speed,0,-speed)));
+        break;
+      case 24:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(speed,0,speed)));
+        break;
+      case 23:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(speed,0,-speed)));
+        break;
+      case 1:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(-speed,0,0)));
+        break;
+      case 2:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(speed,0,0)));
+        break;
+      case 3:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,-speed)));
+        break;
+      case 4:
+        cube3D->setPosition3D(convertToNodeSpace3D(cube3D, convertToWorldSpace3D(cube3D, cube3D->getPosition3D()) + Vec3(0,0,speed)));
+        break;
+      case 0:
+        break;
       }
-    //}
+      //cube3D->setPosition3D(ci.collisionPointList.back().worldPositionOnB - Vec3(110,210,0));
+    }
   });
 
   //creating skybox
@@ -578,41 +577,6 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
     //changes applied to the left circle
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
       
-      //star->setPosition(nodeSpaceLocation);      
-      //reduces movement velocity to initial value
-      /*switch (move_state) {
-        case 14:
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
-          break;
-        case 13:
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
-          break;
-        case 24:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
-          break;
-        case 23:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
-          break;
-        case 1:
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(speed,0,0));
-          break;
-        case 2:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(speed,0,0));
-          break;
-        case 3:
-          cube3D->setPosition3D(cube3D->getPosition3D() - Vec3(0,0,speed));
-          break;
-        case 4:
-          cube3D->setPosition3D(cube3D->getPosition3D() + Vec3(0,0,speed));
-          break;
-        case 0:
-          break;
-      }*/
-
       Director::getInstance()->getScheduler()->schedule(
           CC_SCHEDULE_SELECTOR(Scene1::Move), this, 0.0f, false);
     }
@@ -736,10 +700,10 @@ void Scene1::aim()
 
 void Scene1::IncAngle(float dt) {
   if (angle < 360) {
-    angle += 1.4f;
+    angle += 1.2f;
   }
   else {
-    angle = 1.4f;
+    angle = 1.2f;
   }
   rotationPoint->setRotation3D(rotationPoint->getRotation3D() + Vec3(0,(angle/100),0));
   box->setRotation3D(box->getRotation3D() + Vec3(0,(angle/100),0));
@@ -747,36 +711,17 @@ void Scene1::IncAngle(float dt) {
 
 void Scene1::DecAngle(float dt) {
   if (angle > 0) {
-      angle -= 1.4f;
+      angle -= 1.2f;
   }
   else {
-    angle = 358.6f;
+    angle = 358.8f;
   }
   rotationPoint->setRotation3D(rotationPoint->getRotation3D() - Vec3(0,(angle/100),0));
   box->setRotation3D(box->getRotation3D() - Vec3(0,(angle/100),0));
-  /*auto _Up = Up;
-  auto _Down = Down;
-  auto _Left = Left;
-  auto _Right = Right;
-  
-  _Up.x = (Up.x*cos(angle*M_PI/180) - Up.y*sin(angle*M_PI/180));
-  _Down.x = (Down.x*cos(angle*M_PI/180) - Down.y*sin(angle*M_PI/180));
-  _Left.x = (Left.x*cos(angle*M_PI/180) - Left.y*sin(angle*M_PI/180));
-  _Right.x = (Right.x*cos(angle*M_PI/180) - Right.y*sin(angle*M_PI/180));
-  
-  _Up.y = (Up.x*sin(angle*M_PI/180) + Up.y*cos(angle*M_PI/180));
-  _Down.y = (Down.x*sin(angle*M_PI/180) + Down.y*cos(angle*M_PI/180));
-  _Left.y = (Left.x*sin(angle*M_PI/180) + Left.y*cos(angle*M_PI/180));
-  _Right.y = (Right.x*sin(angle*M_PI/180) + Right.y*cos(angle*M_PI/180));
-  
-  Up = _Up;
-  Down = _Down;
-  Left = _Left;
-  Right = _Right;*/
 }
 
 void Scene1::Move(float dt) {
-  int speed = 2;
+  int speed = 6;
   star->setPosition(nodeSpaceLocation); 
   //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
   if ((nodeSpaceLocation.x < (coord.x -(0.3*(coord.x - Left.x)))) && (nodeSpaceLocation.y < (coord.y -(0.3*(coord.y - Down.y))))) {
