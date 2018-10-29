@@ -90,8 +90,7 @@ void Scene0::Play(cocos2d::Ref *pSender)
         GPGSManager::BeginUserInitiatedSignIn();
 	     g_engine.ShowRoomInbox();
     }
-	auto scene = Scene1::createScene();
-	Director::getInstance()->pushScene(scene);
+	g_engine.PlayGame();
 }
 void Scene0::CreateGame(cocos2d::Ref *pSender)
 {
@@ -107,11 +106,11 @@ void Scene0::CreateGame(cocos2d::Ref *pSender)
 		//g_engine.QuickMatch();
     }
 	auto scene = Scene1::createScene();
-	Director::getInstance()->pushScene(scene);
+	Director::getInstance()->replaceScene(scene);
 }
 void Scene0::Settings(cocos2d::Ref *pSender)
 {
-	/////////////////////////////////////////////////////////////             TEST
+	/*/////////////////////////////////////////////////////////////             TEST
 	if (GPGSManager::IsSignedIn()) {
          CCLOG("! Signed In !");
 		 g_engine.QuickMatch();
@@ -122,7 +121,7 @@ void Scene0::Settings(cocos2d::Ref *pSender)
     }
 	auto scene = Scene1::createScene();
 	Director::getInstance()->pushScene(scene);
-///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////*/
 
 	CCLOG("Settings");
 }

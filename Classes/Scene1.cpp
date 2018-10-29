@@ -103,9 +103,9 @@ bool Scene1::init() {
   this->addChild(_HUD); 
 	
   //debug info
-	labelTouchInfo = Label::createWithCharMap("fonts/tuffy_bold_italic-charmap.png", 48, 64, ' ');
+	/*labelTouchInfo = Label::createWithCharMap("fonts/tuffy_bold_italic-charmap.png", 48, 64, ' ');
   labelTouchInfo->setPosition(Vec2(Director::getInstance()->getVisibleSize().width/2,
-                  Director::getInstance()->getVisibleSize().height ));
+                  Director::getInstance()->getVisibleSize().height ));*/
 	//world->addChild(labelTouchInfo);
 
   //creating sprite for touch
@@ -281,18 +281,6 @@ bool Scene1::init() {
  
   //Texture2D::setDefaultAlphaPixelFormat(Texture2D::PixelFormat::RGB5A1);
 	
-	/*auto closeItem = MenuItemImage::create(
-		"HelloWorld.png",
-		"HelloWorld.png",
-		CC_CALLBACK_1(Scene1::menuCloseCallback, this));
-
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2,
-	origin.y + closeItem->getContentSize().height / 2));
-	this->addChild(closeItem);*/
-	
-  // assigning CameraFlag to hide HUD elements from default camera
-  //Camera::getDefaultCamera()->setCameraFlag(CameraFlag::USER1);
-
 	//creating joystick
   _joystick = Sprite::create("joystick.png");
   _joystick->setScale(0.91);
@@ -308,12 +296,6 @@ bool Scene1::init() {
   Down.x = coord.x;
   Left.y = coord.y;
   Right.y = coord.y;
-
-  /*auto _center = Sprite::create("touch.png");
-  _center->setScale(0.15f);
-  _center->setPosition(Vec2((coord.x -(0.3*(coord.x - Left.x))) , (coord.y +(0.3*(Up.y - coord.y)))));
-  hudlayer->addChild(_center);*/
-  //LOGI("!!!!!!!!!!!!!!!!!!!!!!!coord.x = %f, coord.y = %f, Up.y = %f, Down.y = %f, Left.x = %f, Right.x = %f", coord.x, coord.y, Up.y, Down.y, Left.x, Right.x);
 
   //creating listener for joystick
   auto listener_joystick = EventListenerTouchOneByOne::create();
@@ -617,19 +599,12 @@ void Scene1::menuCloseCallback(Ref* pSender, Anim* _player, Layer* world, Layer*
 {
 	//show fullscreen interstitial
 //	AdmobHelper::showfullscreenAd();
+    //CCLayer::onEnterTransitionDidFinish();
     AdmobHelper::hideAd();
     _player->~Anim();
     g_engine.LeaveGame();
-    //world->removeAllChildren();
-    //hudlayer->removeAllChildren();
-    //this->removeAllChildren();
     auto scene = Scene0::createScene();
     Director::getInstance()->replaceScene(scene);
-  /*  Director::getInstance()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif*/
 }
  
 void Scene1::convertToUint8 (float f, std::vector<unsigned char>& v)

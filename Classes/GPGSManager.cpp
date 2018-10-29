@@ -765,7 +765,7 @@ void GPGSManager::PlayGame() {
     CCLOG("Level");
 	
    auto scene = Scene1::createScene();
-   cocos2d::Director::getInstance()->replaceScene(scene);
+   cocos2d::Director::getInstance()->pushScene(scene);
 }
 
 void GPGSManager::setPlayer1Name()

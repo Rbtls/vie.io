@@ -74,9 +74,8 @@ const float Anim::NORMALIZE_MOVE_SPEED = 3.6f;
 
 Anim::~Anim()
 {
-  //dragonbones/factory/basefactory.cpp
-  //dragonbones/cocos2dx/ccfactory.h
-  //factory->~CCFactory();
+  _armatureDisplay->getArmature()->dispose();
+  factory->clear(true);
 } 
 
 void Anim::_animationEventHandler(cocos2d::EventCustom * event)
