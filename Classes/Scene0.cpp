@@ -1,3 +1,4 @@
+#include "LoadingScene.h"
 #include "Scene0.h"
 #include "Scene1.h"
 #include "Scene2.h"
@@ -81,32 +82,45 @@ bool Scene0::init()
 
 void Scene0::Play(cocos2d::Ref *pSender)
 {
+	// add transition screen 
+    auto scene = LoadingScene::createScene();
+    cocos2d::Director::getInstance()->replaceScene(scene);
 	CCLOG("Play");
 	if (GPGSManager::IsSignedIn()) {
          CCLOG("! Signed In !");
+         auto scene = Scene0::createScene();
+         cocos2d::Director::getInstance()->replaceScene(scene);
 		 g_engine.ShowRoomInbox();
     }
-    else{
+    else {
+        auto scene = Scene0::createScene();
+        cocos2d::Director::getInstance()->replaceScene(scene);
         GPGSManager::BeginUserInitiatedSignIn();
-	     g_engine.ShowRoomInbox();
+        g_engine.ShowRoomInbox();
     }
-	g_engine.PlayGame();
+    // remove later (because playgame() is already in the showroominbox())
+	/*g_engine.PlayGame();*/
 }
 void Scene0::CreateGame(cocos2d::Ref *pSender)
 {
+    // add transition screen 
+    auto scene = LoadingScene::createScene();
+    cocos2d::Director::getInstance()->replaceScene(scene);
 	CCLOG("Create Game");
 	if (GPGSManager::IsSignedIn()) {
          CCLOG("! Signed In !");
+		 auto scene = Scene0::createScene();
+         cocos2d::Director::getInstance()->replaceScene(scene);
 		 g_engine.InviteFriend();
 		 //g_engine.QuickMatch();
     }
     else{
+    	auto scene = Scene0::createScene();
+        cocos2d::Director::getInstance()->replaceScene(scene);
         GPGSManager::BeginUserInitiatedSignIn();
 	     g_engine.InviteFriend();
 		//g_engine.QuickMatch();
     }
-	auto scene = Scene1::createScene();
-	Director::getInstance()->replaceScene(scene);
 }
 void Scene0::Settings(cocos2d::Ref *pSender)
 {

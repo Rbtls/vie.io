@@ -2,6 +2,8 @@
 #include "gpg/message_listener_helper.h"
 #include "android/log.h"
 #include "cocos2d.h"
+#include "LoadingScene.h"
+#include "Scene0.h"
 #include "Scene1.h"
 #include "Scene2.h"
 #include <jni.h>
@@ -387,7 +389,7 @@ void GPGSManager::LeaveGame() {
  */
 void GPGSManager::ShowRoomInbox() {
   gameServices->RealTimeMultiplayer().ShowRoomInboxUI([this](
-      gpg::RealTimeMultiplayerManager::RoomInboxUIResponse const &response) {
+    gpg::RealTimeMultiplayerManager::RoomInboxUIResponse const &response) {
     if (gpg::IsSuccess(response.status)) {
       gpg::RealTimeMultiplayerManager::RealTimeRoomResponse result =
           gameServices->RealTimeMultiplayer().AcceptInvitationBlocking(
@@ -758,14 +760,18 @@ void GPGSManager::SendAllConnections(const std::string& accepting_endpoint_id) {
  * Enable/Disable management UI
  */
 void GPGSManager::EnableUI(bool enable) {
-  
+  if (enable==true) {
+    //not working as expected (without fonts)
+    /*auto scene = Scene0::createScene();
+    Director::getInstance()->replaceScene(scene);*/
+  }
 }
 
 void GPGSManager::PlayGame() {
-    CCLOG("Level");
+  CCLOG("Level started");
 	
-   auto scene = Scene1::createScene();
-   cocos2d::Director::getInstance()->pushScene(scene);
+  auto scene = Scene1::createScene();
+  cocos2d::Director::getInstance()->replaceScene(scene);
 }
 
 void GPGSManager::setPlayer1Name()

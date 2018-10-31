@@ -31,8 +31,9 @@ public:
 	void convertToUint8 (float f, std::vector<unsigned char>& v);
 	void basicShader(cocos2d::Sprite3D * sprite3d);
 	void aim();
-	void IncAngle(float dt);
-	void DecAngle(float dt);
+	void incAngle(float dt);
+	void decAngle(float dt);
+	void sendUdp();
 
     //1-L, 2-R, 3-F, 4-B, 13-LF, 14-LB, 23-RF, 24-RB
 	int move_state;

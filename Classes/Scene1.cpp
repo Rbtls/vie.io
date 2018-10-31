@@ -383,8 +383,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
     if ((event->getCurrentTarget()->getPositionX()) < (Director::getInstance()->getVisibleSize().width / 2)) {
            
       star->setVisible(true);
-      //star->setPosition(nodeSpaceLocation);
-
+      
       _player->move(1);
       
       Director::getInstance()->getScheduler()->schedule(
@@ -395,15 +394,12 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
       //_player->attack(true);
       aim_star->setVisible(true);
       aim_star->setPosition(nodeSpaceLocation);
+      
       // left side of the aim circle
       if ((nodeSpaceLocation.x <= event->getCurrentTarget()->getPositionX())) {
-
-        //_joystick->runAction(rotAngL)
-
-        //_joystick->schedule((Scene1::IncAngle()), 0.f, 0, 0.0f, "schedulerKey"); 
         
         Director::getInstance()->getScheduler()->schedule(
-          CC_SCHEDULE_SELECTOR(Scene1::IncAngle), this, 0.0f, false);
+          CC_SCHEDULE_SELECTOR(Scene1::incAngle), this, 0.0f, false);
 
        //Director::getInstance()->getScheduler()->scheduleUpdate();
 
@@ -416,7 +412,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
         //LOGI("!!!!!!!!!!!!!!!!!!!!!!!getPositionX = %f, bounds = %f, nodeSpaceLocation.x = %f", event->getCurrentTarget()->getPositionX(), bounds.size.width, nodeSpaceLocation.x);
     
         Director::getInstance()->getScheduler()->schedule(
-          CC_SCHEDULE_SELECTOR(Scene1::DecAngle), this, 0.0f, false);
+          CC_SCHEDULE_SELECTOR(Scene1::decAngle), this, 0.0f, false);
       }
       //cube3D->syncPhysicsToNode();
       //_camera->setRotation3D(Vec3(0, (-1)*nodeSpaceLocation.x, 0));
@@ -432,60 +428,7 @@ bool Scene1::onTouchBegan(Touch* touch, Event* event, Anim* _player, Sprite* _no
     }
   }
 
-  //Sending udp about player's location
-  
-
-
-  //How to send udp message with projectile info
-  /*projectile = cocos2d::Sprite::create("projectile.png");
-  addChild(projectile);
-  std::stringstream ss;
-  // 1  - Just an example for how to get the  _player object
-  auto _player = event->getCurrentTarget();
- 
-  // 2
-  Vec2 touchLocation = touch->getLocation();
-  Vec2 offset = touchLocation - _player->getPosition();
- 
-  // 3
-  if (offset.x < 0) {
-    return true;
-  }
- 
-  // 4
-  projectile->setPosition(_player->getPosition());
- 
-  // 5
-  offset.normalize();
-  auto shootAmount = offset * 1000;
- 
-  // 6
-  auto realDest = shootAmount + projectile->getPosition();
- 
-  // 7
-  auto actionMove = MoveTo::create(2.0f, realDest);
-  auto actionRemove = RemoveSelf::create();
-  projectile->runAction(Sequence::create(actionMove,actionRemove, nullptr));
-  
-  
-  std::vector<uint8_t> v;  
-  v.push_back('C');
-  //float f = realDest.x;
-  //char *a = (char *) &f;
-  unsigned char a[sizeof(float)];
-  memcpy(a, &realDest.x, sizeof(float));
-  v.push_back(a);
-  memcpy(a, &realDest.y, sizeof(float));
-  f = realDest.y;
-  v.push_back(a); * /
-  
-  Scene1::convertToUint8(realDest.x, v);
-  v.push_back('#');
-  Scene1::convertToUint8(realDest.y, v);
-  
-  ss << realDest.x << " " << realDest.y;
-  labelTouchInfo->setString(ss.str().c_str());
-  g_engine.gameServices->RealTimeMultiplayer().SendUnreliableMessageToOthers(g_engine.room_, v);*/
+  sendUdp();
   
   return true;
 }
@@ -526,10 +469,10 @@ void Scene1::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
     else if ((event->getCurrentTarget()->getPositionX()) > (Director::getInstance()->getVisibleSize().width / 2)) {
      
       Director::getInstance()->getScheduler()->unschedule(
-          CC_SCHEDULE_SELECTOR(Scene1::IncAngle), this);
+          CC_SCHEDULE_SELECTOR(Scene1::incAngle), this);
 
       Director::getInstance()->getScheduler()->unschedule(
-          CC_SCHEDULE_SELECTOR(Scene1::DecAngle), this);
+          CC_SCHEDULE_SELECTOR(Scene1::decAngle), this);
 
       aim_star->setVisible(false);
       _player->attack(false);
@@ -571,14 +514,14 @@ void Scene1::onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event, Anim* _p
       //left side of the aim circle
       if ((nodeSpaceLocation.x <= event->getCurrentTarget()->getPositionX())) {
         Director::getInstance()->getScheduler()->schedule(
-          CC_SCHEDULE_SELECTOR(Scene1::IncAngle), this, 0.0f, false);
+          CC_SCHEDULE_SELECTOR(Scene1::incAngle), this, 0.0f, false);
       } 
       //right side of the aim circle
       else if ((nodeSpaceLocation.x > event->getCurrentTarget()->getPositionX())) {
         //LOGI("!!!!!!!!!!!!!!!!!!!!!!!getPositionX = %f, bounds = %f, nodeSpaceLocation.x = %f", event->getCurrentTarget()->getPositionX(), bounds.size.width, nodeSpaceLocation.x);
         star->setVisible(false);
         Director::getInstance()->getScheduler()->schedule(
-          CC_SCHEDULE_SELECTOR(Scene1::DecAngle), this, 0.0f, false);
+          CC_SCHEDULE_SELECTOR(Scene1::decAngle), this, 0.0f, false);
       }
     }
   }
@@ -598,13 +541,13 @@ void Scene1::messageReceived(Event* event)
 void Scene1::menuCloseCallback(Ref* pSender, Anim* _player, Layer* world, Layer* hudlayer)
 {
 	//show fullscreen interstitial
-//	AdmobHelper::showfullscreenAd();
-    //CCLayer::onEnterTransitionDidFinish();
-    AdmobHelper::hideAd();
-    _player->~Anim();
-    g_engine.LeaveGame();
-    auto scene = Scene0::createScene();
-    Director::getInstance()->replaceScene(scene);
+  //AdmobHelper::showfullscreenAd();
+  //CCLayer::onEnterTransitionDidFinish();
+  AdmobHelper::hideAd();
+  _player->~Anim();
+  g_engine.LeaveGame();
+  auto scene = Scene0::createScene();
+  Director::getInstance()->replaceScene(scene);
 }
  
 void Scene1::convertToUint8 (float f, std::vector<unsigned char>& v)
@@ -642,7 +585,7 @@ void Scene1::convertToUint8 (float f, std::vector<unsigned char>& v)
   }   
 }
 
-void Scene1::basicShader(cocos2d::Sprite3D * sprite3d)
+void Scene1::basicShader(cocos2d::Sprite3D * sprite3d)          //////WIP
 {
     if(sprite3d)
     {
@@ -673,7 +616,7 @@ void Scene1::aim()
   addChild(camera); //add camera to the scene
 }
 
-void Scene1::IncAngle(float dt) {
+void Scene1::incAngle(float dt) {
   if (angle < 360) {
     angle += 1.2f;
   }
@@ -684,7 +627,7 @@ void Scene1::IncAngle(float dt) {
   box->setRotation3D(box->getRotation3D() + Vec3(0,(angle/100),0));
 }
 
-void Scene1::DecAngle(float dt) {
+void Scene1::decAngle(float dt) {
   if (angle > 0) {
       angle -= 1.2f;
   }
@@ -740,6 +683,65 @@ void Scene1::Move(float dt) {
     move_state = 0;
   }
   //LOGI("!!!!!!!!!!!!!!!!!!!!!!!move_state = %d", move_state);
+}
+
+void Scene1::sendUdp() {
+  //Sending udp about player's location
+  
+  
+
+  //How to send udp message with projectile info
+  /*projectile = cocos2d::Sprite::create("projectile.png");
+  addChild(projectile);
+  std::stringstream ss;
+  // 1  - Just an example for how to get the  _player object
+  auto _player = event->getCurrentTarget();
+ 
+  // 2
+  Vec2 touchLocation = touch->getLocation();
+  Vec2 offset = touchLocation - _player->getPosition();
+ 
+  // 3
+  if (offset.x < 0) {
+    return true;
+  }
+ 
+  // 4
+  projectile->setPosition(_player->getPosition());
+ 
+  // 5
+  offset.normalize();
+  auto shootAmount = offset * 1000;
+ 
+  // 6
+  auto realDest = shootAmount + projectile->getPosition();
+ 
+  // 7
+  auto actionMove = MoveTo::create(2.0f, realDest);
+  auto actionRemove = RemoveSelf::create();
+  projectile->runAction(Sequence::create(actionMove,actionRemove, nullptr));
+  
+  
+  std::vector<uint8_t> v;  
+  v.push_back('C');
+  //float f = realDest.x;
+  //char *a = (char *) &f;
+  unsigned char a[sizeof(float)];
+  
+  memcpy(a, &realDest.x, sizeof(float));
+  v.push_back(a);
+  
+  memcpy(a, &realDest.y, sizeof(float));
+  f = realDest.y;
+  v.push_back(a); * /
+  
+  Scene1::convertToUint8(realDest.x, v);
+  v.push_back('#');
+  Scene1::convertToUint8(realDest.y, v);
+  
+  ss << realDest.x << " " << realDest.y;
+  labelTouchInfo->setString(ss.str().c_str());
+  g_engine.gameServices->RealTimeMultiplayer().SendUnreliableMessageToOthers(g_engine.room_, v);*/
 }
 
 Vec3 Scene1::convertToWorldSpace3D(Node* container, Vec3 position) {
